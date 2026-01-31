@@ -2,8 +2,11 @@
 header('Cache-Control: no-cache, no-store, must-revalidate');
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/lib/ads.php';
+require_once __DIR__ . '/lib/auto_scheduler.php';
 
 date_default_timezone_set('Asia/Kolkata');
+
+triggerAutoScrapeIfNeeded($pdo);
 
 $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
