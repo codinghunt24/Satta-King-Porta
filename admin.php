@@ -208,6 +208,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $postId = intval($_POST['post_id']);
         $pdo->prepare("DELETE FROM news_posts WHERE id = ?")->execute([$postId]);
         $message = "Post deleted successfully!";
+    } elseif (isset($_POST['add_scrape_source'])) {
+        $url = trim($_POST['source_url']);
+        if (!empty($url) && filter_var($url, FILTER_VALIDATE_URL)) {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO scrape_sources (url, is_active) VALUES (?, 1)");
+                $stmt->execute([$url]);
+                $message = "Scrape source added successfully!";
+            } catch(PDOException $e) {
+                $message = "URL already exists!";
+                $messageType = 'error';
+            }
+        } else {
+            $message = "Please enter a valid URL!";
+            $messageType = 'error';
+        }
+    } elseif (isset($_POST['delete_scrape_source'])) {
+        $sourceId = intval($_POST['source_id']);
+        $pdo->prepare("DELETE FROM scrape_sources WHERE id = ?")->execute([$sourceId]);
+        $message = "Scrape source deleted!";
+    } elseif (isset($_POST['toggle_scrape_source'])) {
+        $sourceId = intval($_POST['source_id']);
+        $pdo->exec("UPDATE scrape_sources SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = $sourceId");
+        $message = "Scrape source status updated!";
+    } elseif (isset($_POST['run_auto_scrape_now'])) {
+        require_once __DIR__ . '/lib/auto_scheduler.php';
+        runAutoScrape($pdo);
+        $message = "Auto scrape completed!";
     } elseif (isset($_POST['publish_daily_update'])) {
         $publishDate = date('Y-m-d');
         $dateFormatTitle = date('j M Y', strtotime($publishDate));
@@ -335,6 +362,12 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
                     <a href="admin.php?page=logs">
                         <span class="nav-icon">📋</span>
                         <span>Scrape Logs</span>
+                    </a>
+                </li>
+                <li class="<?php echo $currentPage === 'auto-scrape' ? 'active' : ''; ?>">
+                    <a href="admin.php?page=auto-scrape">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Auto Scrape</span>
                     </a>
                 </li>
                 <li class="<?php echo $currentPage === 'posts' ? 'active' : ''; ?>">
@@ -635,6 +668,86 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
                     </table>
                 <?php else: ?>
                     <p class="empty-state">No scrape logs yet.</p>
+                <?php endif; ?>
+            </div>
+
+            <?php elseif ($currentPage === 'auto-scrape'): 
+                $scrapeSources = $pdo->query("SELECT * FROM scrape_sources ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+                $lastAutoScrape = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_scrape'")->fetchColumn();
+            ?>
+            <div class="admin-card">
+                <h3 class="card-title">Auto Scrape Settings</h3>
+                <p class="form-hint">Yahan se aap automatic scraping ke liye URLs manage kar sakte hain. Har 30 minute mein jab koi visitor aata hai, yeh URLs automatically scrape hote hain.</p>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <p style="color: #10b981; margin-bottom: 10px;"><strong>Last Auto Scrape:</strong></p>
+                    <p style="color: #ffd700; font-size: 1.2rem;"><?php echo $lastAutoScrape ? date('d M Y, h:i A', strtotime($lastAutoScrape)) : 'Not yet'; ?></p>
+                </div>
+                
+                <form method="POST" style="margin-bottom: 20px;">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                    <button type="submit" name="run_auto_scrape_now" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                        🔄 Run Auto Scrape Now
+                    </button>
+                </form>
+            </div>
+            
+            <div class="admin-card">
+                <h3 class="card-title">Add New Scrape Source</h3>
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                    <div class="form-group">
+                        <label>Website URL</label>
+                        <input type="url" name="source_url" placeholder="https://example.com/" required style="width: 100%; padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #0f172a; color: #fff;">
+                    </div>
+                    <button type="submit" name="add_scrape_source" class="btn btn-success" style="width: 100%; padding: 12px;">
+                        ➕ Add Source
+                    </button>
+                </form>
+            </div>
+            
+            <div class="admin-card">
+                <h3 class="card-title">Scrape Sources</h3>
+                <?php if (!empty($scrapeSources)): ?>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Last Scraped</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($scrapeSources as $source): ?>
+                            <tr>
+                                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($source['url']); ?></td>
+                                <td>
+                                    <span class="status-badge <?php echo $source['is_active'] ? 'status-success' : 'status-error'; ?>">
+                                        <?php echo $source['is_active'] ? 'Active' : 'Inactive'; ?>
+                                    </span>
+                                </td>
+                                <td><?php echo $source['last_scraped_at'] ? date('d M, h:i A', strtotime($source['last_scraped_at'])) : 'Never'; ?></td>
+                                <td>
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                        <input type="hidden" name="source_id" value="<?php echo $source['id']; ?>">
+                                        <button type="submit" name="toggle_scrape_source" class="btn btn-small <?php echo $source['is_active'] ? 'btn-warning' : 'btn-success'; ?>">
+                                            <?php echo $source['is_active'] ? 'Disable' : 'Enable'; ?>
+                                        </button>
+                                    </form>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                        <input type="hidden" name="source_id" value="<?php echo $source['id']; ?>">
+                                        <button type="submit" name="delete_scrape_source" class="btn btn-small btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="empty-state">No scrape sources added yet.</p>
                 <?php endif; ?>
             </div>
 
