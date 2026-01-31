@@ -3,64 +3,64 @@ require_once __DIR__ . '/database.php';
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS satta_results (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         game_name VARCHAR(100) NOT NULL,
         result VARCHAR(10),
         result_time TIME,
         result_date DATE,
         source_url TEXT,
-        scraped_at DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_game_date (game_name, result_date)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        scraped_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (game_name, result_date)
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS games (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
         time_slot TIME NOT NULL,
-        is_active TINYINT(1) DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        is_active SMALLINT DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS scrape_logs (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         source_url TEXT NOT NULL,
         status VARCHAR(20) NOT NULL,
         message TEXT,
         records_updated INT DEFAULT 0,
-        scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS site_pages (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         slug VARCHAR(50) NOT NULL UNIQUE,
         title VARCHAR(200) NOT NULL,
         content TEXT,
         meta_title VARCHAR(200),
         meta_description TEXT,
-        is_published TINYINT(1) DEFAULT 1,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        is_published SMALLINT DEFAULT 1,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS site_settings (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         setting_key VARCHAR(100) NOT NULL UNIQUE,
         setting_value TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS news_posts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         slug VARCHAR(255) NOT NULL UNIQUE,
         excerpt TEXT,
@@ -71,15 +71,15 @@ $pdo->exec("
         meta_keywords TEXT,
         status VARCHAR(20) DEFAULT 'draft',
         views INT DEFAULT 0,
-        published_at DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        published_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS posts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         slug VARCHAR(255) NOT NULL UNIQUE,
         meta_description TEXT,
@@ -87,19 +87,19 @@ $pdo->exec("
         games_included TEXT,
         post_date DATE,
         views INT DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS ad_placements (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         placement_name VARCHAR(50) NOT NULL UNIQUE,
         ad_code TEXT,
-        is_active TINYINT(1) DEFAULT 0,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        is_active SMALLINT DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
 ");
 
 $checkPages = $pdo->query("SELECT COUNT(*) FROM site_pages")->fetchColumn();
@@ -156,7 +156,7 @@ if ($checkGames == 0) {
         $stmt->execute($game);
     }
     
-    $resultStmt = $pdo->prepare("INSERT INTO satta_results (game_name, result, result_time, result_date) VALUES (?, ?, ?, CURDATE())");
+    $resultStmt = $pdo->prepare("INSERT INTO satta_results (game_name, result, result_time, result_date) VALUES (?, ?, ?, CURRENT_DATE)");
     $resultStmt->execute(['Gali', '45', '11:30:00']);
     $resultStmt->execute(['Desawar', '89', '05:00:00']);
     $resultStmt->execute(['Faridabad', '23', '18:15:00']);

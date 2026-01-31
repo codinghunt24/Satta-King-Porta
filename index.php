@@ -11,7 +11,7 @@ $yesterday = date('Y-m-d', strtotime('-1 day'));
 $allResults = $pdo->query("
     SELECT sr.game_name, sr.result, sr.result_date, sr.result_time
     FROM satta_results sr 
-    WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
+    WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
     ORDER BY sr.result_time ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -40,7 +40,7 @@ usort($gameResults, function($a, $b) {
 $chartData = $pdo->query("
     SELECT result_date, game_name, result 
     FROM satta_results 
-    WHERE result_date >= CURDATE() - INTERVAL 7 DAY
+    WHERE result_date >= CURRENT_DATE - INTERVAL '7 days'
     ORDER BY result_date DESC, game_name
 ")->fetchAll(PDO::FETCH_ASSOC);
 

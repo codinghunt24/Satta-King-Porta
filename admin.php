@@ -83,11 +83,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $_POST['result'];
         $time = $_POST['result_time'];
         
-        $checkStmt = $pdo->prepare("SELECT id FROM satta_results WHERE game_name = ? AND result_date = CURDATE()");
+        $checkStmt = $pdo->prepare("SELECT id FROM satta_results WHERE game_name = ? AND result_date = CURRENT_DATE");
         $checkStmt->execute([$game]);
         
         if ($checkStmt->fetch()) {
-            $stmt = $pdo->prepare("UPDATE satta_results SET result = ?, result_time = ? WHERE game_name = ? AND result_date = CURDATE()");
+            $stmt = $pdo->prepare("UPDATE satta_results SET result = ?, result_time = ? WHERE game_name = ? AND result_date = CURRENT_DATE");
             $stmt->execute([$result, $time, $game]);
             $message = "Result updated successfully!";
         } else {
@@ -215,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $gamesWithResults = $pdo->query("
             SELECT DISTINCT game_name FROM satta_results 
-            WHERE result_date = CURDATE() AND result IS NOT NULL AND result != ''
+            WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''
             ORDER BY game_name
         ")->fetchAll(PDO::FETCH_COLUMN);
         
@@ -277,9 +277,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $scraper = new SattaScraper($pdo);
 $scrapeLogs = $scraper->getLastScrapeLog();
 $games = $pdo->query("SELECT * FROM games WHERE is_active = 1 ORDER BY time_slot")->fetchAll(PDO::FETCH_ASSOC);
-$todayResults = $pdo->query("SELECT * FROM satta_results WHERE result_date = CURDATE() ORDER BY result_time")->fetchAll(PDO::FETCH_ASSOC);
+$todayResults = $pdo->query("SELECT * FROM satta_results WHERE result_date = CURRENT_DATE ORDER BY result_time")->fetchAll(PDO::FETCH_ASSOC);
 $totalGames = $pdo->query("SELECT COUNT(*) FROM games WHERE is_active = 1")->fetchColumn();
-$totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_date = CURDATE()")->fetchColumn();
+$totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_date = CURRENT_DATE")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="hi">
@@ -640,7 +640,7 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
 
             <?php elseif ($currentPage === 'posts'): 
                 $publishedPosts = $pdo->query("SELECT * FROM posts ORDER BY post_date DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
-                $todayGamesCount = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result_date = CURDATE() AND result IS NOT NULL AND result != ''")->fetchColumn();
+                $todayGamesCount = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''")->fetchColumn();
             ?>
             <div class="admin-card">
                 <h3 class="card-title">Publish Daily Update Post</h3>
