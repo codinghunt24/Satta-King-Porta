@@ -190,6 +190,17 @@ try {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             ");
             
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS scrape_sources (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    url TEXT NOT NULL,
+                    is_active TINYINT(1) DEFAULT 1,
+                    last_scraped DATETIME,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            ");
+            
             $checkGames = $pdo->query("SELECT COUNT(*) FROM games")->fetchColumn();
             if ($checkGames == 0) {
                 $games = [
@@ -235,12 +246,22 @@ try {
                 $settings = [
                     ['google_analytics_code', ''],
                     ['meta_verification_google', ''],
-                    ['meta_verification_bing', '']
+                    ['meta_verification_bing', ''],
+                    ['admin_password', password_hash($adminPass, PASSWORD_DEFAULT)],
+                    ['auto_publish_enabled', '1'],
+                    ['auto_publish_time', '01:00'],
+                    ['last_auto_publish', '']
                 ];
                 $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)");
                 foreach ($settings as $setting) {
                     $stmt->execute($setting);
                 }
+            }
+            
+            $checkSources = $pdo->query("SELECT COUNT(*) FROM scrape_sources")->fetchColumn();
+            if ($checkSources == 0) {
+                $stmt = $pdo->prepare("INSERT INTO scrape_sources (name, url, is_active) VALUES (?, ?, 1)");
+                $stmt->execute(['Satta King Fast', 'https://satta-king-fast.com/']);
             }
             
             $envContent = "SESSION_SECRET={$adminPass}\n";
