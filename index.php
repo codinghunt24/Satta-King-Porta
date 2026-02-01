@@ -58,11 +58,13 @@ $analyticsCode = '';
 $googleVerify = '';
 $bingVerify = '';
 try {
+    $adsenseAutoAds = '';
     $settingsQuery = $pdo->query("SELECT setting_key, setting_value FROM site_settings");
     while ($row = $settingsQuery->fetch(PDO::FETCH_ASSOC)) {
         if ($row['setting_key'] === 'google_analytics_code') $analyticsCode = $row['setting_value'];
         if ($row['setting_key'] === 'meta_verification_google') $googleVerify = $row['setting_value'];
         if ($row['setting_key'] === 'meta_verification_bing') $bingVerify = $row['setting_value'];
+        if ($row['setting_key'] === 'adsense_auto_ads') $adsenseAutoAds = $row['setting_value'];
     }
 } catch(Exception $e) {}
 ?>
@@ -87,6 +89,7 @@ try {
     <link rel="canonical" href="/">
     <link rel="stylesheet" href="css/style.css">
     <?php if (!empty($analyticsCode)) echo $analyticsCode; ?>
+    <?php if (!empty($adsenseAutoAds)) echo $adsenseAutoAds; ?>
 </head>
 <body>
     <header>

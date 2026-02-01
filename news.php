@@ -43,6 +43,9 @@ $newsPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php if (!empty($settings['google_analytics_code'])): ?>
     <?php echo $settings['google_analytics_code']; ?>
     <?php endif; ?>
+    <?php if (!empty($settings['adsense_auto_ads'])): ?>
+    <?php echo $settings['adsense_auto_ads']; ?>
+    <?php endif; ?>
 </head>
 <body>
     <header>

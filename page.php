@@ -22,6 +22,10 @@ if (!$page) {
 $analyticsStmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'google_analytics_code'");
 $analyticsStmt->execute();
 $analyticsCode = $analyticsStmt->fetchColumn();
+
+$adsenseStmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'adsense_auto_ads'");
+$adsenseStmt->execute();
+$adsenseAutoAds = $adsenseStmt->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="hi">
@@ -35,6 +39,9 @@ $analyticsCode = $analyticsStmt->fetchColumn();
     <link rel="stylesheet" href="/css/style.css">
     <?php if (!empty($analyticsCode)): ?>
     <?php echo $analyticsCode; ?>
+    <?php endif; ?>
+    <?php if (!empty($adsenseAutoAds)): ?>
+    <?php echo $adsenseAutoAds; ?>
     <?php endif; ?>
 </head>
 <body>

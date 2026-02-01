@@ -30,6 +30,28 @@ if ($path === '/sitemap.xml') {
     return true;
 }
 
+if ($path === '/ads.txt') {
+    require __DIR__ . '/config/database.php';
+    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+    $stmt->execute(['ads_txt_content']);
+    $adsTxt = $stmt->fetchColumn() ?: '';
+    header('Content-Type: text/plain; charset=utf-8');
+    echo $adsTxt;
+    return true;
+}
+
+if ($path === '/robots.txt') {
+    header('Content-Type: text/plain; charset=utf-8');
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    echo "User-agent: *\n";
+    echo "Allow: /\n";
+    echo "Disallow: /admin.php\n";
+    echo "Disallow: /install.php\n";
+    echo "Disallow: /config/\n\n";
+    echo "Sitemap: https://{$host}/sitemap.xml\n";
+    return true;
+}
+
 if (file_exists(__DIR__ . $path) && is_file(__DIR__ . $path)) {
     return false;
 }

@@ -22,6 +22,13 @@ if (!$post) {
 $updateViews = $pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?");
 $updateViews->execute([$post['id']]);
 
+$adsenseAutoAds = '';
+try {
+    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+    $stmt->execute(['adsense_auto_ads']);
+    $adsenseAutoAds = $stmt->fetchColumn() ?: '';
+} catch(Exception $e) {}
+
 $postDate = $post['post_date'];
 $gameName = $post['games_included'];
 
@@ -105,6 +112,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo htmlspecialchars($post['title']); ?>">
     <link rel="stylesheet" href="/css/style.css">
+    <?php if (!empty($adsenseAutoAds)) echo $adsenseAutoAds; ?>
     <style>
         .post-container {
             max-width: 900px;

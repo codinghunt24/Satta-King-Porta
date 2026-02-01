@@ -5,6 +5,13 @@ require_once __DIR__ . '/lib/ads.php';
 
 date_default_timezone_set('Asia/Kolkata');
 
+$adsenseAutoAds = '';
+try {
+    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+    $stmt->execute(['adsense_auto_ads']);
+    $adsenseAutoAds = $stmt->fetchColumn() ?: '';
+} catch(Exception $e) {}
+
 $allGames = $pdo->query("SELECT DISTINCT name FROM games ORDER BY name")->fetchAll(PDO::FETCH_COLUMN);
 if (empty($allGames)) {
     $allGames = $pdo->query("SELECT DISTINCT game_name FROM satta_results ORDER BY game_name")->fetchAll(PDO::FETCH_COLUMN);
@@ -102,6 +109,7 @@ $pageKeywords = $gameName
     <meta property="og:description" content="<?php echo $pageDescription; ?>">
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="css/style.css">
+    <?php if (!empty($adsenseAutoAds)) echo $adsenseAutoAds; ?>
     
     <script type="application/ld+json">
     {

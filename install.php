@@ -250,7 +250,10 @@ try {
                     ['admin_password', password_hash($adminPass, PASSWORD_DEFAULT)],
                     ['auto_publish_enabled', '1'],
                     ['auto_publish_time', '01:00'],
-                    ['last_auto_publish', '']
+                    ['last_auto_publish', ''],
+                    ['adsense_auto_ads', ''],
+                    ['adsense_publisher_id', ''],
+                    ['ads_txt_content', '']
                 ];
                 $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)");
                 foreach ($settings as $setting) {

@@ -907,16 +907,71 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
                 }
                 $adPlacements = $pdo->query("SELECT * FROM ad_placements ORDER BY placement_name")->fetchAll(PDO::FETCH_ASSOC);
             ?>
+            <?php
+                // Handle AdSense settings save
+                if (isset($_POST['save_adsense_settings'])) {
+                    $adsenseAutoAds = $_POST['adsense_auto_ads'] ?? '';
+                    $adsensePublisherId = trim($_POST['adsense_publisher_id'] ?? '');
+                    $adsTxtContent = $_POST['ads_txt_content'] ?? '';
+                    
+                    $updateSetting = $pdo->prepare("UPDATE site_settings SET setting_value = ?, updated_at = CURRENT_TIMESTAMP WHERE setting_key = ?");
+                    $updateSetting->execute([$adsenseAutoAds, 'adsense_auto_ads']);
+                    $updateSetting->execute([$adsensePublisherId, 'adsense_publisher_id']);
+                    $updateSetting->execute([$adsTxtContent, 'ads_txt_content']);
+                    $message = "AdSense settings saved successfully!";
+                }
+                
+                // Fetch current AdSense settings
+                $adsenseSettings = [];
+                $adsenseKeys = ['adsense_auto_ads', 'adsense_publisher_id', 'ads_txt_content'];
+                foreach ($adsenseKeys as $key) {
+                    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+                    $stmt->execute([$key]);
+                    $adsenseSettings[$key] = $stmt->fetchColumn() ?: '';
+                }
+            ?>
+
+            <!-- AdSense Auto Ads & Verification -->
             <div class="admin-card">
-                <h3 class="card-title">Ad Placements</h3>
-                <p class="form-hint">Add your AdSense or custom ad code to each placement. Leave empty to disable.</p>
+                <h3 class="card-title">Google AdSense Setup</h3>
+                <p class="form-hint">Configure AdSense Auto Ads, Publisher ID, and ads.txt for your website.</p>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                    
+                    <div class="form-group">
+                        <label>AdSense Publisher ID</label>
+                        <input type="text" name="adsense_publisher_id" value="<?php echo htmlspecialchars($adsenseSettings['adsense_publisher_id']); ?>" placeholder="ca-pub-XXXXXXXXXXXXXXXX">
+                        <p class="form-hint">Your AdSense Publisher ID (e.g., ca-pub-1234567890123456)</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>AdSense Auto Ads / Verification Code</label>
+                        <textarea name="adsense_auto_ads" class="form-textarea" rows="6" placeholder="<script async src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX' crossorigin='anonymous'></script>"><?php echo htmlspecialchars($adsenseSettings['adsense_auto_ads']); ?></textarea>
+                        <p class="form-hint">Paste the AdSense Auto Ads code or verification script. This will be added to the &lt;head&gt; section of all pages.</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>ads.txt Content</label>
+                        <textarea name="ads_txt_content" class="form-textarea" rows="4" placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0"><?php echo htmlspecialchars($adsenseSettings['ads_txt_content']); ?></textarea>
+                        <p class="form-hint">Enter your ads.txt content. This will be served at /ads.txt for AdSense verification.</p>
+                    </div>
+                    
+                    <button type="submit" name="save_adsense_settings" class="btn btn-primary">Save AdSense Settings</button>
+                </form>
+            </div>
+
+            <!-- Manual Ad Placements -->
+            <div class="admin-card">
+                <h3 class="card-title">Manual Ad Placements</h3>
+                <p class="form-hint">Add individual ad units to specific positions. Use responsive ad codes for best results.</p>
                 
                 <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #3b82f6;">
                     <p style="color: #60a5fa; font-size: 0.9rem;"><strong>Available Placements:</strong></p>
                     <ul style="color: #9ca3af; font-size: 0.85rem; margin-left: 20px; margin-top: 10px;">
                         <li><strong>header_ad</strong> - Top of page (after header)</li>
                         <li><strong>after_result</strong> - Below result tables</li>
-                        <li><strong>sidebar_ad</strong> - Sidebar area (desktop)</li>
+                        <li><strong>sidebar</strong> - Sidebar area (desktop)</li>
                         <li><strong>footer_ad</strong> - Before footer</li>
                         <li><strong>between_posts</strong> - Between post listings</li>
                     </ul>

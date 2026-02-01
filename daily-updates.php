@@ -18,6 +18,13 @@ $gradients = [
     'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
 ];
+
+$adsenseAutoAds = '';
+try {
+    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+    $stmt->execute(['adsense_auto_ads']);
+    $adsenseAutoAds = $stmt->fetchColumn() ?: '';
+} catch(Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="hi">
@@ -30,6 +37,7 @@ $gradients = [
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="/daily-updates.php">
     <link rel="stylesheet" href="css/style.css">
+    <?php if (!empty($adsenseAutoAds)) echo $adsenseAutoAds; ?>
     <style>
         .posts-grid {
             display: grid;
