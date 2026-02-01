@@ -1,4 +1,21 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Debug mode - show server info
+if (isset($_GET['debug'])) {
+    echo "<h2>Server Debug Info</h2>";
+    echo "<p>PHP Version: " . phpversion() . "</p>";
+    echo "<p>Server: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "</p>";
+    echo "<p>Document Root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'Unknown') . "</p>";
+    echo "<p>Script: " . (__FILE__) . "</p>";
+    echo "<p>Writable config: " . (is_writable(__DIR__ . '/config') ? 'Yes' : 'No') . "</p>";
+    echo "<p>Session path: " . session_save_path() . "</p>";
+    echo "<p>Session writable: " . (is_writable(session_save_path()) ? 'Yes' : 'No') . "</p>";
+    phpinfo();
+    exit;
+}
+
 session_start();
 
 $installed = file_exists(__DIR__ . '/.installed');
