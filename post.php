@@ -265,6 +265,32 @@ $formattedDate = date('d F Y', strtotime($postDate));
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Daily Updates",
+                "item": "/daily-updates.php"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "<?php echo htmlspecialchars($gameName); ?>",
+                "item": "/post/<?php echo htmlspecialchars($post['slug']); ?>"
+            }
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
             {
@@ -332,13 +358,39 @@ $formattedDate = date('d F Y', strtotime($postDate));
     </header>
 
     <main class="post-container">
-        <article>
+        <nav class="breadcrumb" style="margin-bottom: 20px;">
+            <a href="/" style="color: #9ca3af; text-decoration: none;">Home</a>
+            <span style="color: #6b7280; margin: 0 10px;">›</span>
+            <a href="/daily-updates.php" style="color: #9ca3af; text-decoration: none;">Daily Updates</a>
+            <span style="color: #6b7280; margin: 0 10px;">›</span>
+            <span style="color: #e94560;"><?php echo htmlspecialchars($gameName); ?></span>
+        </nav>
+
+        <article itemscope itemtype="https://schema.org/Article">
             <header class="post-header">
-                <h1><?php echo htmlspecialchars($post['title']); ?></h1>
-                <p class="post-meta">Published on <?php echo date('d F Y, h:i A', strtotime($post['created_at'])); ?></p>
+                <h1 itemprop="headline"><?php echo htmlspecialchars($post['title']); ?></h1>
+                <p class="post-meta">
+                    <span itemprop="datePublished" content="<?php echo date('c', strtotime($post['created_at'])); ?>">
+                        Published on <?php echo date('d F Y, h:i A', strtotime($post['created_at'])); ?>
+                    </span>
+                    <span style="margin-left: 15px; color: #60a5fa;">📖 5 min read</span>
+                    <span style="margin-left: 15px; color: #10b981;">👁 <?php echo number_format($post['views'] ?? 0); ?> views</span>
+                </p>
             </header>
 
-            <section class="post-section">
+            <div class="toc-box" style="background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 20px; margin-bottom: 25px; border: 1px solid #374151;">
+                <h3 style="color: #ffd700; margin-bottom: 15px; font-size: 1.1rem;">📋 Table of Contents</h3>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 8px;"><a href="#result" style="color: #60a5fa; text-decoration: none;">1. Today's Result</a></li>
+                    <li style="margin-bottom: 8px;"><a href="#chart" style="color: #60a5fa; text-decoration: none;">2. Last 7 Days Chart</a></li>
+                    <li style="margin-bottom: 8px;"><a href="#about" style="color: #60a5fa; text-decoration: none;">3. About <?php echo htmlspecialchars($gameName); ?></a></li>
+                    <li style="margin-bottom: 8px;"><a href="#analysis" style="color: #60a5fa; text-decoration: none;">4. Result Analysis</a></li>
+                    <li style="margin-bottom: 8px;"><a href="#faq" style="color: #60a5fa; text-decoration: none;">5. FAQ Section</a></li>
+                    <li style="margin-bottom: 8px;"><a href="#related" style="color: #60a5fa; text-decoration: none;">6. Related Results</a></li>
+                </ul>
+            </div>
+
+            <section class="post-section" id="result">
                 <h2><?php echo htmlspecialchars($gameName); ?> Result - <?php echo $formattedDate; ?></h2>
                 <p style="color: #d1d5db; margin-bottom: 20px; line-height: 1.8;">
                     Welcome to the official <?php echo htmlspecialchars($gameName); ?> Satta King result page for <?php echo $dayName; ?>, <?php echo $formattedDate; ?>. 
@@ -361,7 +413,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
             </section>
 
             <?php if (count($weeklyResults) > 1): ?>
-            <section class="post-section">
+            <section class="post-section" id="chart">
                 <h2><?php echo htmlspecialchars($gameName); ?> Last 7 Days Chart</h2>
                 <table class="admin-table" style="width: 100%;">
                     <thead>
@@ -382,7 +434,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
             </section>
             <?php endif; ?>
             
-            <section class="post-section">
+            <section class="post-section" id="about">
                 <h2>About <?php echo htmlspecialchars($gameName); ?> Satta King Game</h2>
                 <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
                     <?php echo htmlspecialchars($gameName); ?> is a well-known Satta King game that attracts players from across India. 
@@ -404,7 +456,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
             </section>
 
             <?php if (count($monthlyResults) > 5): ?>
-            <section class="post-section">
+            <section class="post-section" id="analysis">
                 <h2><?php echo htmlspecialchars($gameName); ?> Result Analysis - <?php echo $monthName; ?> <?php echo $year; ?></h2>
                 <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 20px;">
                     Based on the last 30 days of <?php echo htmlspecialchars($gameName); ?> results, here is a detailed statistical analysis 
@@ -450,7 +502,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
             </section>
             <?php endif; ?>
 
-            <section class="post-section">
+            <section class="post-section" id="faq">
                 <h2><?php echo htmlspecialchars($gameName); ?> Satta King - Complete Guide & FAQ</h2>
                 <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 20px;">
                     Find answers to frequently asked questions about <?php echo htmlspecialchars($gameName); ?> Satta King game, 
@@ -512,7 +564,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
                 </p>
             </section>
 
-            <section class="post-section">
+            <section class="post-section" id="related">
                 <h2>Related <?php echo htmlspecialchars($gameName); ?> Results</h2>
                 <div class="internal-links">
                     <a href="/index.php" class="internal-link">Satta King Home</a>
@@ -523,6 +575,48 @@ $formattedDate = date('d F Y', strtotime($postDate));
                     <?php endforeach; ?>
                 </div>
             </section>
+
+            <section class="post-section" style="background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%); border: 1px solid #e94560;">
+                <h2 style="color: #e94560;">⚠️ Important Disclaimer</h2>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
+                    This website is for <strong>informational and entertainment purposes only</strong>. We do not encourage or promote any form of gambling or betting. 
+                    Satta King and similar games are illegal in many parts of India and other countries. Please be aware of the laws in your jurisdiction before participating in any such activities.
+                </p>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
+                    We are not responsible for any financial losses or legal issues that may arise from the use of information provided on this website. 
+                    All results displayed are sourced from publicly available information and are provided as-is without any warranty.
+                </p>
+                <p style="color: #d1d5db; line-height: 1.8;">
+                    <strong style="color: #ffd700;">Age Restriction:</strong> This website is intended for users aged 18 years and above. 
+                    If you are under 18, please exit this website immediately. Gambling addiction can be harmful - if you or someone you know has a gambling problem, 
+                    please seek professional help.
+                </p>
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #374151;">
+                    <a href="/page/disclaimer" style="color: #60a5fa; text-decoration: none;">Read Full Disclaimer →</a>
+                    <span style="margin: 0 10px; color: #6b7280;">|</span>
+                    <a href="/page/privacy-policy" style="color: #60a5fa; text-decoration: none;">Privacy Policy →</a>
+                    <span style="margin: 0 10px; color: #6b7280;">|</span>
+                    <a href="/page/terms-conditions" style="color: #60a5fa; text-decoration: none;">Terms & Conditions →</a>
+                </div>
+            </section>
+
+            <div style="text-align: center; margin: 30px 0; padding: 20px; background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px;">
+                <p style="color: #9ca3af; margin-bottom: 15px;">Share this result with friends:</p>
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <a href="https://wa.me/?text=<?php echo urlencode($post['title'] . ' - Check result here!'); ?>" target="_blank" rel="nofollow noopener" 
+                       style="background: #25D366; color: #fff; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+                        WhatsApp
+                    </a>
+                    <a href="https://telegram.me/share/url?url=&text=<?php echo urlencode($post['title']); ?>" target="_blank" rel="nofollow noopener"
+                       style="background: #0088cc; color: #fff; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+                        Telegram
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?quote=<?php echo urlencode($post['title']); ?>" target="_blank" rel="nofollow noopener"
+                       style="background: #1877F2; color: #fff; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+                        Facebook
+                    </a>
+                </div>
+            </div>
         </article>
     </main>
 
