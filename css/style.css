@@ -92,6 +92,13 @@ nav a:hover {
     font-weight: 600;
 }
 
+.last-update {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #FFD700;
+    font-weight: 500;
+}
+
 .results-section {
     padding: 30px 0;
 }

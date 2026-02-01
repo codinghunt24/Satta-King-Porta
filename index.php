@@ -11,6 +11,10 @@ triggerAutoScrapeIfNeeded($pdo);
 $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
+$lastUpdateStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_scrape'");
+$lastUpdateTime = $lastUpdateStmt->fetchColumn();
+$lastUpdateFormatted = $lastUpdateTime ? date('h:i A', strtotime($lastUpdateTime)) : 'Not yet';
+
 $allResults = $pdo->query("
     SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time,
            COALESCE(g.display_order, 999) as display_order
@@ -110,6 +114,9 @@ try {
             <p>Satta King 786 | Delhi Satta King | Satta King Disawar | Gali Disawar</p>
             <div class="current-date">
                 <?php echo date('d F Y'); ?>
+            </div>
+            <div class="last-update">
+                Last Updated: <?php echo $lastUpdateFormatted; ?>
             </div>
         </section>
 
