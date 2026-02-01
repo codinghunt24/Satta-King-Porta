@@ -198,14 +198,20 @@ $metaKeywords = $post['meta_keywords'] ?: 'satta king news, satta king, satta re
 <body>
     <header>
         <div class="container">
-            <a href="/" class="logo">SATTA <span>KING</span></a>
-            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-            <nav id="mainNav">
-                <a href="index.php">Home</a>
-                <a href="daily-updates.php">Daily Update</a>
-                <a href="news.php" class="active">News</a>
-                <a href="chart.php">Chart</a>
-            </nav>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Satta <span>King</span></h1>
+                </div>
+                <button class="mobile-menu" onclick="toggleMenu()">&#9776;</button>
+                <nav id="mainNav">
+                    <ul>
+                        <li><a href="index.php">Home</a></li>
+                        <li><a href="daily-updates.php">Daily Update</a></li>
+                        <li><a href="news.php" class="active">News</a></li>
+                        <li><a href="chart.php">Chart</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
 
