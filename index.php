@@ -6,7 +6,7 @@ require_once __DIR__ . '/lib/auto_scheduler.php';
 
 date_default_timezone_set('Asia/Kolkata');
 
-triggerAutoScrapeIfNeeded($pdo);
+triggerAllScheduledTasks($pdo);
 
 $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
