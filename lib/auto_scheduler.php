@@ -5,7 +5,7 @@ function shouldRunAutoScrape($pdo) {
     $lastRun = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_scrape'")->fetchColumn();
     
     if (!$lastRun) {
-        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('last_auto_scrape', '2000-01-01 00:00:00') ON CONFLICT (setting_key) DO NOTHING");
+        $pdo->exec("INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES ('last_auto_scrape', '2000-01-01 00:00:00')");
         return true;
     }
     
@@ -32,7 +32,7 @@ function shouldAutoPublishPosts($pdo) {
     $lastPublish = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_publish'")->fetchColumn();
     
     if (!$lastPublish) {
-        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('last_auto_publish', '2000-01-01') ON CONFLICT (setting_key) DO NOTHING");
+        $pdo->exec("INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES ('last_auto_publish', '2000-01-01')");
         $lastPublish = '2000-01-01';
     }
     

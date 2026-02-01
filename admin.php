@@ -310,8 +310,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $autoPublishHour = 1;
         }
         
-        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_enabled', '{$autoPublishEnabled}') ON CONFLICT (setting_key) DO UPDATE SET setting_value = '{$autoPublishEnabled}', updated_at = CURRENT_TIMESTAMP");
-        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_hour', '{$autoPublishHour}') ON CONFLICT (setting_key) DO UPDATE SET setting_value = '{$autoPublishHour}', updated_at = CURRENT_TIMESTAMP");
+        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_enabled', '{$autoPublishEnabled}') ON DUPLICATE KEY UPDATE setting_value = '{$autoPublishEnabled}', updated_at = CURRENT_TIMESTAMP");
+        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_hour', '{$autoPublishHour}') ON DUPLICATE KEY UPDATE setting_value = '{$autoPublishHour}', updated_at = CURRENT_TIMESTAMP");
         
         $message = "Auto-publish settings saved successfully!";
     }

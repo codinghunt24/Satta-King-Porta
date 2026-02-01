@@ -411,25 +411,23 @@ class SattaScraper {
         $today = date('Y-m-d');
         
         $gameStmt = $this->pdo->prepare("
-            INSERT INTO games (name, time_slot)
+            INSERT IGNORE INTO games (name, time_slot)
             VALUES (?, ?)
-            ON CONFLICT (name) DO NOTHING
         ");
         
         $todayStmt = $this->pdo->prepare("
             INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT (game_name, result_date) DO UPDATE SET 
-                result = EXCLUDED.result,
-                result_time = EXCLUDED.result_time,
-                source_url = EXCLUDED.source_url,
+            ON DUPLICATE KEY UPDATE 
+                result = VALUES(result),
+                result_time = VALUES(result_time),
+                source_url = VALUES(source_url),
                 scraped_at = CURRENT_TIMESTAMP
         ");
         
         $historyStmt = $this->pdo->prepare("
-            INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
+            INSERT IGNORE INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT (game_name, result_date) DO NOTHING
         ");
         
         foreach ($data as $row) {
