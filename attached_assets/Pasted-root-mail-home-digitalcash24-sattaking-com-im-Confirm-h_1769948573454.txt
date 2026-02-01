@@ -1,0 +1,35 @@
+root@mail:/home/digitalcash24/sattaking.com.im# # Confirm .htaccess gone
+root@mail:/home/digitalcash24/sattaking.com.im# ls -la /home/digitalcash24/sattaking.com.im/
+total 312
+drwxr-xr-x  8 www-data      www-data       4096 Feb  1 13:22 .
+drwx--x--x 18 digitalcash24 digitalcash24  4096 Jan 30 22:47 ..
+drwxr-xr-x  7 www-data      www-data       4096 Feb  1 13:20 .git
+-rw-r--r--  1 www-data      www-data         84 Feb  1 13:20 .gitignore
+-rw-r--r--  1 www-data      www-data         20 Feb  1 13:20 .installed
+drwxr-xr-x  3 www-data      www-data       4096 Feb  1 13:20 .local
+-rw-r--r--  1 www-data      www-data        672 Feb  1 13:20 .replit
+-rw-r--r--  1 www-data      www-data      71265 Feb  1 13:20 admin.php
+drwxr-xr-x  2 www-data      www-data       4096 Feb  1 13:20 attached_assets
+-rw-r--r--  1 www-data      www-data      23965 Feb  1 13:20 chart.php
+drwxr-xr-x  2 www-data      www-data       4096 Feb  1 13:20 config
+drwxr-xr-x  2 www-data      www-data       4096 Feb  1 13:20 css
+-rw-r--r--  1 www-data      www-data       7915 Feb  1 13:20 daily-updates.php
+-rw-r--r--  1 www-data      www-data      13359 Feb  1 13:20 index.php
+-rw-r--r--  1 www-data      www-data      22006 Feb  1 13:20 install.php
+drwxr-xr-x  2 www-data      www-data       4096 Feb  1 13:20 lib
+-rw-r--r--  1 www-data      www-data      10926 Feb  1 13:20 news-post.php
+-rw-r--r--  1 www-data      www-data       6830 Feb  1 13:20 news.php
+-rw-r--r--  1 www-data      www-data       3618 Feb  1 13:20 page.php
+-rw-r--r--  1 www-data      www-data      40845 Feb  1 13:20 post.php
+-rw-r--r--  1 www-data      www-data       1731 Feb  1 13:20 replit.md
+-rw-r--r--  1 www-data      www-data       1612 Feb  1 13:20 router.php
+-rw-r--r--  1 www-data      www-data      48566 Feb  1 13:20 sattaking-production.tar.gz
+-rw-r--r--  1 www-data      www-data       2220 Feb  1 13:20 sitemap.php
+root@mail:/home/digitalcash24/sattaking.com.im# # Apache error log check karein (kyunki Apache bhi hai)
+root@mail:/home/digitalcash24/sattaking.com.im# tail -20 /var/log/apache2/error.log
+tail: cannot open '/var/log/apache2/error.log' for reading: No such file or directory
+root@mail:/home/digitalcash24/sattaking.com.im# 
+root@mail:/home/digitalcash24/sattaking.com.im# # Ya httpd
+root@mail:/home/digitalcash24/sattaking.com.im# tail -20 /var/log/httpd/error_log
+tail: cannot open '/var/log/httpd/error_log' for reading: No such file or directory
+root@mail:/home/digitalcash24/sattaking.com.im# 
