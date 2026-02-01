@@ -500,22 +500,59 @@ footer p {
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 10px;
+    }
+    
     .results-table {
-        min-width: 350px;
+        min-width: 100%;
+        table-layout: fixed;
+    }
+    
+    .results-table th:first-child,
+    .results-table td:first-child {
+        width: 45%;
+    }
+    
+    .results-table th:nth-child(2),
+    .results-table td:nth-child(2),
+    .results-table th:nth-child(3),
+    .results-table td:nth-child(3) {
+        width: 27.5%;
     }
     
     .results-table th,
     .results-table td {
-        padding: 8px 5px;
-        font-size: 0.8rem;
+        padding: 8px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .game-name-cell {
+        padding-left: 8px !important;
+        font-size: 0.7rem !important;
+        word-break: break-word;
+    }
+    
+    .game-meta {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .game-time-inline {
+        font-size: 0.65rem !important;
+    }
+    
+    .record-chart-link {
+        font-size: 0.6rem !important;
+        padding: 2px 4px !important;
     }
     
     .result-cell {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
     
     .result-cell.today-result {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 }
 
