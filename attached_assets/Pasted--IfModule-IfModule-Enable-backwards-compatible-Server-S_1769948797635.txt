@@ -1,0 +1,370 @@
+        </IfModule>
+    </IfModule>
+
+    # Enable backwards compatible Server Side Include expression parser for Apache versions >= 2.4.
+    # To selectively use the newer Apache 2.4 expression parser, disable SSILegacyExprParser in
+    # the user's .htaccess file.  For more information, please read:
+    #    http://httpd.apache.org/docs/2.4/mod/mod_include.html#ssilegacyexprparser
+    <IfModule mod_include.c>
+        <Directory "/home/digitalcash24/sattaking.com.im">
+        SSILegacyExprParser On
+        </Directory>
+    </IfModule>
+
+    <Proxymatch ^https?://127\.0\.0\.1:(2082|2083|2087)/>
+    <IfModule security2_module>
+        SecRuleEngine Off
+    </IfModule>
+    </Proxymatch>
+
+    <IfModule mod_suphp.c>
+        suPHP_UserGroup digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule suexec_module>
+        <IfModule !mod_ruid2.c>
+            SuexecUserGroup digitalcash24 digitalcash24
+        </IfModule>
+    </IfModule>
+    <IfModule ruid2_module>
+        RMode config
+        RUidGid digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mpm_itk.c>
+        # For more information on MPM ITK, please read:
+        #   http://mpm-itk.sesse.net/
+        AssignUserID digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mod_passenger.c>
+        PassengerUser digitalcash24
+        PassengerGroup digitalcash24
+    </IfModule>
+
+    <IfModule alias_module>
+        ScriptAlias /cgi-bin/ /home/digitalcash24/sattaking.com.im/cgi-bin/
+    </IfModule>
+
+    <IfModule ssl_module>
+        SSLEngine on
+        
+        SSLCertificateFile /var/zesle/ssl/letsencrypt/sattaking.com.im/cert.pem
+        SSLCertificateKeyFile /var/zesle/ssl/letsencrypt/sattaking.com.im/privkey.pem
+        SSLCACertificateFile /var/zesle/ssl/letsencrypt/sattaking.com.im/chain.pem
+        SSLUseStapling off
+        SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+        <Directory "/home/digitalcash24/sattaking.com.im/cgi-bin">
+        SSLOptions +StdEnvVars
+        </Directory>
+    </IfModule>
+
+
+    AliasMatch "^/(\.well-known/acme-challenge)/(.*)$"   "/var/www/html/$1/$2"
+    # To customize this VirtualHost use an include file at the following location
+    # Include "/etc/apache2/conf.d/userdata/ssl/2_4/digitalcash24/sattaking.com.im/*.conf"
+
+    <IfModule headers_module>
+        RequestHeader set X-HTTPS 1
+    </IfModule>
+
+    RewriteEngine On
+
+    SSLProxyEngine on
+    SSLProxyVerify none
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerName off
+
+    # Authorization header fixed => REDIRECT_HTTP_AUTHORIZATION
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+    RewriteCond %{HTTP_HOST} ^webmail.
+    RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webmail" "https://127.0.0.1:2083" max=1 retry=0
+
+    RewriteCond %{HTTP_HOST} ^zeslecp.
+    RewriteRule ^/terminal-ws/(.*) "wss://127.0.0.1:2087/terminal-ws/$1" [P,L]
+
+    RewriteCond %{HTTP_HOST} ^zeslecp.
+    RewriteCond %{HTTP_HOST} !^zeslecp.com$
+    RewriteRule ^/(.*) /___proxy_subdomain_zeslecp/$1 [PT]
+    ProxyPass "/___proxy_subdomain_zeslecp" "https://127.0.0.1:2087" max=1 retry=0
+
+</VirtualHost>
+
+<VirtualHost 127.0.0.1:8080>
+    ServerName sattaking.com.im
+    ServerAlias www.sattaking.com.im
+    DocumentRoot /home/digitalcash24/sattaking.com.im
+    ServerAdmin webmaster@sattaking.com.im
+    UseCanonicalName Off
+
+    ## User digitalcash24
+    <IfModule userdir_module>
+        <IfModule !mpm_itk.c>
+            <IfModule !ruid2_module>
+                <IfModule !mod_passenger.c>
+                    UserDir disabled
+                    UserDir enabled digitalcash24
+                </IfModule>
+            </IfModule>
+        </IfModule>
+    </IfModule>
+
+    # Enable backwards compatible Server Side Include expression parser for Apache versions >= 2.4.
+    # To selectively use the newer Apache 2.4 expression parser, disable SSILegacyExprParser in
+    # the user's .htaccess file.  For more information, please read:
+    #    http://httpd.apache.org/docs/2.4/mod/mod_include.html#ssilegacyexprparser
+    <IfModule include_module>
+        <Directory "/home/digitalcash24/sattaking.com.im">
+          SSILegacyExprParser On
+        </Directory>
+    </IfModule>
+
+    <IfModule suphp_module>
+        suPHP_UserGroup digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule suexec_module>
+        <IfModule !mod_ruid2.c>
+            SuexecUserGroup digitalcash24 digitalcash24
+        </IfModule>
+    </IfModule>
+    <IfModule ruid2_module>
+        RMode config
+        RUidGid digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mpm_itk.c>
+        # For more information on MPM ITK, please read:
+        #   http://mpm-itk.sesse.net/
+        AssignUserID digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mod_passenger.c>
+        PassengerUser digitalcash24
+        PassengerGroup digitalcash24
+    </IfModule>
+
+    <IfModule alias_module>
+        ScriptAlias /cgi-bin/ /home/digitalcash24/sattaking.com.im/cgi-bin/
+    </IfModule>
+
+
+    # Global DCV Rewrite Exclude
+    <IfModule rewrite_module>
+        RewriteOptions Inherit
+    </IfModule>
+
+    AliasMatch "^/(\.well-known/acme-challenge)/(.*)$"   "/var/www/html/$1/$2"
+
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^webmail.
+    RewriteRule ^/(.*) https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+
+    # Authorization header fixed => REDIRECT_HTTP_AUTHORIZATION
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+    RewriteCond %{HTTP_HOST} ^zeslecp.
+    RewriteCond %{HTTP_HOST} !^zeslecp.com$
+    RewriteRule ^/(.*) https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+
+    RewriteCond %{SERVER_NAME} =sattaking.com.im [OR]
+    RewriteCond %{SERVER_NAME} =www.sattaking.com.im
+    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+
+    # To customize this VirtualHost use an include file at the following location
+    # Include "/etc/apache2/conf.d/userdata/std/2_4/digitalcash24/digitalcash24.com/*.conf"
+</VirtualHost>
+
+# BEGIN: HTTP vhosts list
+
+<VirtualHost 127.0.0.1:8443>
+    ServerName sattaking.com.im
+    ServerAlias www.sattaking.com.im webmail.sattaking.com.im zeslecp.sattaking.com.im
+    DocumentRoot /home/digitalcash24/sattaking.com.im
+    ServerAdmin webmaster@sattaking.com.im
+    UseCanonicalName Off
+
+    ## User digitalcash24
+    <IfModule userdir_module>
+        <IfModule !mpm_itk.c>
+            <IfModule !ruid2_module>
+                <IfModule !mod_passenger.c>
+                    UserDir disabled
+                    UserDir enabled digitalcash24
+                </IfModule>
+            </IfModule>
+        </IfModule>
+    </IfModule>
+
+    # Enable backwards compatible Server Side Include expression parser for Apache versions >= 2.4.
+    # To selectively use the newer Apache 2.4 expression parser, disable SSILegacyExprParser in
+    # the user's .htaccess file.  For more information, please read:
+    #    http://httpd.apache.org/docs/2.4/mod/mod_include.html#ssilegacyexprparser
+    <IfModule mod_include.c>
+        <Directory "/home/digitalcash24/sattaking.com.im">
+        SSILegacyExprParser On
+        </Directory>
+    </IfModule>
+
+    <Proxymatch ^https?://127\.0\.0\.1:(2082|2083|2087)/>
+    <IfModule security2_module>
+        SecRuleEngine Off
+    </IfModule>
+    </Proxymatch>
+
+    <IfModule mod_suphp.c>
+        suPHP_UserGroup digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule suexec_module>
+        <IfModule !mod_ruid2.c>
+            SuexecUserGroup digitalcash24 digitalcash24
+        </IfModule>
+    </IfModule>
+    <IfModule ruid2_module>
+        RMode config
+        RUidGid digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mpm_itk.c>
+        # For more information on MPM ITK, please read:
+        #   http://mpm-itk.sesse.net/
+        AssignUserID digitalcash24 digitalcash24
+    </IfModule>
+    <IfModule mod_passenger.c>
+        PassengerUser digitalcash24
+        PassengerGroup digitalcash24
+    </IfModule>
+
+    <IfModule alias_module>
+        ScriptAlias /cgi-bin/ /home/digitalcash24/sattaking.com.im/cgi-bin/
+    </IfModule>
+
+    <IfModule ssl_module>
+        SSLEngine on
+        
+        SSLCertificateFile /var/zesle/ssl/letsencrypt/sattaking.com.im/cert.pem
+        SSLCertificateKeyFile /var/zesle/ssl/letsencrypt/sattaking.com.im/privkey.pem
+        SSLCACertificateFile /var/zesle/ssl/letsencrypt/sattaking.com.im/chain.pem
+        SSLUseStapling off
+        SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
+        <Directory "/home/digitalcash24/sattaking.com.im/cgi-bin">
+        SSLOptions +StdEnvVars
+        </Directory>
+    </IfModule>
+
+
+    AliasMatch "^/(\.well-known/acme-challenge)/(.*)$"   "/var/www/html/$1/$2"
+    # To customize this VirtualHost use an include file at the following location
+    # Include "/etc/apache2/conf.d/userdata/ssl/2_4/digitalcash24/sattaking.com.im/*.conf"
+
+    <IfModule headers_module>
+        RequestHeader set X-HTTPS 1
+    </IfModule>
+
+    RewriteEngine On
+
+    SSLProxyEngine on
+    SSLProxyVerify none
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerName off
+
+    # Authorization header fixed => REDIRECT_HTTP_AUTHORIZATION
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+    RewriteCond %{HTTP_HOST} ^webmail.
+    RewriteRule ^/(.*) /___proxy_subdomain_webmail/$1 [PT]
+    ProxyPass "/___proxy_subdomain_webmail" "https://127.0.0.1:2083" max=1 retry=0
+
+    RewriteCond %{HTTP_HOST} ^zeslecp.
+    RewriteRule ^/terminal-ws/(.*) "wss://127.0.0.1:2087/terminal-ws/$1" [P,L]
+
+    RewriteCond %{HTTP_HOST} ^zeslecp.
+    RewriteCond %{HTTP_HOST} !^zeslecp.com$
+    RewriteRule ^/(.*) /___proxy_subdomain_zeslecp/$1 [PT]
+    ProxyPass "/___proxy_subdomain_zeslecp" "https://127.0.0.1:2087" max=1 retry=0
+
+</VirtualHost>
+root@mail:/home/digitalcash24/sattaking.com.im# 
+root@mail:/home/digitalcash24/sattaking.com.im# # Parent directory permissions
+root@mail:/home/digitalcash24/sattaking.com.im# namei -l /home/digitalcash24/sattaking.com.im/install.php
+f: /home/digitalcash24/sattaking.com.im/install.php
+drwxr-xr-x root          root          /
+drwxr-xr-x root          root          home
+drwx--x--x digitalcash24 digitalcash24 digitalcash24
+drwxr-xr-x www-data      www-data      sattaking.com.im
+-rw-r--r-- www-data      www-data      install.php
+root@mail:/home/digitalcash24/sattaking.com.im# 
+root@mail:/home/digitalcash24/sattaking.com.im# # Apache error log find karein
+root@mail:/home/digitalcash24/sattaking.com.im# find /var/log -name "*apache*" -o -name "*error*" 2>/dev/null | head -10
+/var/log/nginx/error.log
+/var/log/nginx/error.log.6.gz
+/var/log/nginx/error.log.1
+/var/log/nginx/error.log.12.gz
+/var/log/nginx/error.log.8.gz
+/var/log/nginx/error.log.10.gz
+/var/log/nginx/error.log.7.gz
+/var/log/nginx/error.log.11.gz
+/var/log/nginx/error.log.2.gz
+/var/log/nginx/error.log.4.gz
+root@mail:/home/digitalcash24/sattaking.com.im# 
+root@mail:/home/digitalcash24/sattaking.com.im# # Domain specific logs
+root@mail:/home/digitalcash24/sattaking.com.im# ls -la /home/digitalcash24/logs/ 2>/dev/null || ls -la /var/log/virtualmin/ 2>/dev/null || ls -la /var/log/domains/ 2>/dev/null
+total 28
+drwxr-xr-x  2 root          nobody        4096 Feb  1 13:17 .
+drwx--x--x 18 digitalcash24 digitalcash24 4096 Jan 30 22:47 ..
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 api.codinghunt.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 api.codinghunt.in.error_log
+-rw-r--r--  1 nobody        nobody         710 Feb  1 13:17 codinghunt.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 codinghunt.in.error_log
+-rw-r--r--  1 nobody        nobody         735 Feb  1 13:17 cricbuzz-live-score.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 cricbuzz-live-score.com.error_log
+-rw-r--r--  1 nobody        nobody         875 Feb  1 13:17 digitalcash24.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 digitalcash24.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 instapaisa.net.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 instapaisa.net.error_log
+-rw-r--r--  1 nobody        nobody         234 Feb  1 13:17 jj-communication.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 jj-communication.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 lodhasamaj.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 lodhasamaj.in.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 mail.digitalcash24.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 mail.digitalcash24.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 sarkariresult.com.kg.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 sarkariresult.com.kg.error_log
+-rw-r--r--  1 nobody        nobody        1727 Feb  1 13:18 sattaking.com.im.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 sattaking.com.im.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 server.digitalcash24.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 server.digitalcash24.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.codinghunt.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.codinghunt.in.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.cricbuzz-live-score.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.cricbuzz-live-score.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.digitalcash24.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.digitalcash24.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.instapaisa.net.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.instapaisa.net.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.jj-communication.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.jj-communication.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.lodhasamaj.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.lodhasamaj.in.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.sarkariresult.com.kg.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.sarkariresult.com.kg.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.sattaking.com.im.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.sattaking.com.im.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.zestmony.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 webmail.zestmony.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.codinghunt.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.codinghunt.in.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.cricbuzz-live-score.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.cricbuzz-live-score.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.digitalcash24.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.digitalcash24.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.instapaisa.net.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.instapaisa.net.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.jj-communication.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.jj-communication.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.lodhasamaj.in.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.lodhasamaj.in.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.sarkariresult.com.kg.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.sarkariresult.com.kg.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.sattaking.com.im.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.sattaking.com.im.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.zestmony.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zeslecp.zestmony.com.error_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zestmony.com.access_log
+-rw-r--r--  1 nobody        nobody           0 Feb  1 13:17 zestmony.com.error_log
+root@mail:/home/digitalcash24/sattaking.com.im# 
