@@ -80,7 +80,7 @@ foreach ($results as $r) {
 arsort($digitFrequency);
 $hotDigits = array_slice(array_keys($digitFrequency), 0, 3);
 
-$pageTitle = $gameName ? htmlspecialchars($gameName) . ' Chart ' . $monthName . ' ' . $selectedYear . ' | Satta King Record' : 'Satta King Chart | All Games Record Chart';
+$pageTitle = $gameName ? htmlspecialchars($gameName) . ' Satta King Chart ' . $monthName . ' ' . $selectedYear . ' | Record Chart' : 'Satta King Chart | All Games Record Chart';
 $pageDescription = $gameName 
     ? 'Check ' . htmlspecialchars($gameName) . ' Satta King Chart for ' . $monthName . ' ' . $selectedYear . '. View complete monthly record, historical results, and patterns. Updated daily.'
     : 'Satta King Chart - View monthly record chart for all Satta King games. Check Gali, Disawar, Faridabad, Ghaziabad and ' . $totalGamesCount . '+ games historical results.';
