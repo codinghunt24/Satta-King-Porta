@@ -285,20 +285,31 @@ class SattaScraper {
                 $todayResult = trim($match[4]);
                 
                 $time24 = date('H:i:s', strtotime($timeStr));
+                $normalizedName = $this->normalizeGameName($gameName);
                 
-                if ($yesterdayResult !== '--' && $yesterdayResult !== '-' && $yesterdayResult !== 'XX' && preg_match('/^\d{2}$/', $yesterdayResult)) {
+                // Save yesterday result (only if actual number)
+                if (preg_match('/^\d{2}$/', $yesterdayResult)) {
                     $data[] = [
-                        'game_name' => $this->normalizeGameName($gameName),
+                        'game_name' => $normalizedName,
                         'result' => $yesterdayResult,
                         'result_time' => $time24,
                         'result_date' => $yesterday
                     ];
                 }
                 
-                if ($todayResult !== '--' && $todayResult !== '-' && $todayResult !== 'XX' && preg_match('/^\d{2}$/', $todayResult)) {
+                // Save today result - XX means waiting, actual number means result
+                if (preg_match('/^\d{2}$/', $todayResult)) {
                     $data[] = [
-                        'game_name' => $this->normalizeGameName($gameName),
+                        'game_name' => $normalizedName,
                         'result' => $todayResult,
+                        'result_time' => $time24,
+                        'result_date' => $today
+                    ];
+                } else {
+                    // Save XX/-- as waiting status for today
+                    $data[] = [
+                        'game_name' => $normalizedName,
+                        'result' => 'XX',
                         'result_time' => $time24,
                         'result_date' => $today
                     ];

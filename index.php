@@ -12,7 +12,7 @@ $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
 $allResults = $pdo->query("
-    SELECT sr.game_name, sr.result, sr.result_date, sr.result_time
+    SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time
     FROM satta_results sr 
     WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
     ORDER BY sr.result_time ASC
