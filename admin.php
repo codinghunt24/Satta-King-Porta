@@ -302,6 +302,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $messageType = 'error';
             }
         }
+    } elseif (isset($_POST['save_auto_publish_settings'])) {
+        $autoPublishEnabled = isset($_POST['auto_publish_enabled']) ? '1' : '0';
+        $autoPublishHour = intval($_POST['auto_publish_hour']);
+        
+        if ($autoPublishHour < 0 || $autoPublishHour > 23) {
+            $autoPublishHour = 1;
+        }
+        
+        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_enabled', '{$autoPublishEnabled}') ON CONFLICT (setting_key) DO UPDATE SET setting_value = '{$autoPublishEnabled}', updated_at = CURRENT_TIMESTAMP");
+        $pdo->exec("INSERT INTO site_settings (setting_key, setting_value) VALUES ('auto_publish_hour', '{$autoPublishHour}') ON CONFLICT (setting_key) DO UPDATE SET setting_value = '{$autoPublishHour}', updated_at = CURRENT_TIMESTAMP");
+        
+        $message = "Auto-publish settings saved successfully!";
     }
 }
 
@@ -759,6 +771,17 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
                 $publishedPosts = $pdo->query("SELECT * FROM posts ORDER BY post_date DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
                 $totalActiveGames = $pdo->query("SELECT COUNT(*) FROM games WHERE is_active = 1")->fetchColumn();
                 $gamesWithResults = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''")->fetchColumn();
+                
+                $autoPublishEnabled = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'auto_publish_enabled'")->fetchColumn();
+                $autoPublishHour = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'auto_publish_hour'")->fetchColumn();
+                $lastAutoPublish = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_publish'")->fetchColumn();
+                
+                if ($autoPublishEnabled === false) $autoPublishEnabled = '1';
+                if ($autoPublishHour === false) $autoPublishHour = '1';
+                
+                date_default_timezone_set('Asia/Kolkata');
+                $serverTimeIST = date('h:i:s A');
+                $serverDateIST = date('d M Y');
             ?>
             <div class="admin-card">
                 <h3 class="card-title">Publish Daily Update Post</h3>
@@ -781,6 +804,60 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
                 <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 15px; text-align: center;">
                     Post will be created with full SEO including meta tags, keywords, and sitemap entry.
                 </p>
+            </div>
+
+            <div class="admin-card">
+                <h3 class="card-title">⏰ Auto-Publish Scheduler</h3>
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <p style="color: #60a5fa; margin-bottom: 5px;"><strong>🇮🇳 Server Time (IST):</strong></p>
+                    <p style="color: #ffd700; font-size: 1.5rem; font-weight: 700;" id="serverTime"><?php echo $serverTimeIST; ?></p>
+                    <p style="color: #9ca3af; font-size: 0.9rem;"><?php echo $serverDateIST; ?></p>
+                </div>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" name="auto_publish_enabled" value="1" <?php echo $autoPublishEnabled === '1' ? 'checked' : ''; ?> style="width: 20px; height: 20px; accent-color: #10b981;">
+                            <span style="color: #d1d5db; font-size: 1rem;">Enable Auto-Publish Daily Posts</span>
+                        </label>
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 5px; margin-left: 30px;">When enabled, posts will be published automatically at the scheduled time.</p>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="color: #d1d5db; display: block; margin-bottom: 8px;">Publish Time (Hour - 24hr format):</label>
+                        <select name="auto_publish_hour" style="width: 100%; padding: 12px; background: #374151; border: 1px solid #4b5563; border-radius: 8px; color: #fff; font-size: 1rem;">
+                            <?php for ($h = 0; $h <= 23; $h++): ?>
+                                <option value="<?php echo $h; ?>" <?php echo intval($autoPublishHour) === $h ? 'selected' : ''; ?>>
+                                    <?php echo sprintf('%02d:00', $h); ?> (<?php echo date('h:i A', strtotime("$h:00")); ?>)
+                                </option>
+                            <?php endfor; ?>
+                        </select>
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 5px;">Posts will be published after this hour when first visitor comes.</p>
+                    </div>
+                    
+                    <button type="submit" name="save_auto_publish_settings" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        💾 Save Scheduler Settings
+                    </button>
+                </form>
+                
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #374151;">
+                    <p style="color: #9ca3af; font-size: 0.9rem;">
+                        <strong>Status:</strong> 
+                        <span style="color: <?php echo $autoPublishEnabled === '1' ? '#10b981' : '#ef4444'; ?>;">
+                            <?php echo $autoPublishEnabled === '1' ? '✅ Enabled' : '❌ Disabled'; ?>
+                        </span>
+                    </p>
+                    <p style="color: #9ca3af; font-size: 0.9rem;">
+                        <strong>Scheduled Time:</strong> 
+                        <span style="color: #ffd700;"><?php echo date('h:i A', strtotime(intval($autoPublishHour) . ':00')); ?></span>
+                    </p>
+                    <p style="color: #9ca3af; font-size: 0.9rem;">
+                        <strong>Last Auto-Publish:</strong> 
+                        <span style="color: #60a5fa;"><?php echo $lastAutoPublish ? date('d M Y', strtotime($lastAutoPublish)) : 'Never'; ?></span>
+                    </p>
+                </div>
             </div>
 
             <div class="admin-card">

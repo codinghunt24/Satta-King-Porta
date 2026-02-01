@@ -17,6 +17,18 @@ function shouldRunAutoScrape($pdo) {
 }
 
 function shouldAutoPublishPosts($pdo) {
+    $autoPublishEnabled = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'auto_publish_enabled'")->fetchColumn();
+    
+    if ($autoPublishEnabled === '0') {
+        return false;
+    }
+    
+    $autoPublishHour = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'auto_publish_hour'")->fetchColumn();
+    if ($autoPublishHour === false) {
+        $autoPublishHour = 1;
+    }
+    $autoPublishHour = intval($autoPublishHour);
+    
     $lastPublish = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_publish'")->fetchColumn();
     
     if (!$lastPublish) {
@@ -27,7 +39,7 @@ function shouldAutoPublishPosts($pdo) {
     $today = date('Y-m-d');
     $currentHour = (int)date('H');
     
-    if ($lastPublish !== $today && $currentHour >= 1) {
+    if ($lastPublish !== $today && $currentHour >= $autoPublishHour) {
         return true;
     }
     
