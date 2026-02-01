@@ -16,11 +16,11 @@ $lastUpdateTime = $lastUpdateStmt->fetchColumn();
 $lastUpdateFormatted = $lastUpdateTime ? date('h:i A', strtotime($lastUpdateTime)) : 'Not yet';
 
 $allResults = $pdo->query("
-    SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time,
+    SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%Y-%m-%d') as result_date, sr.result_time,
            COALESCE(g.display_order, 999) as display_order
     FROM satta_results sr 
     LEFT JOIN games g ON g.name = sr.game_name
-    WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+    WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
     ORDER BY COALESCE(g.display_order, 999) ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -50,7 +50,7 @@ usort($gameResults, function($a, $b) {
 $chartData = $pdo->query("
     SELECT result_date, game_name, result 
     FROM satta_results 
-    WHERE result_date >= CURRENT_DATE - INTERVAL '7 days'
+    WHERE result_date >= CURDATE() - INTERVAL 7 DAY
     ORDER BY result_date DESC, game_name
 ")->fetchAll(PDO::FETCH_ASSOC);
 
