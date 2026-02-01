@@ -224,7 +224,8 @@ class SattaScraper {
         $today = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime('-1 day'));
         
-        $pattern = '/<tr[^>]*class="[^"]*game-result[^"]*"[^>]*>.*?<h3[^>]*class="[^"]*game-name[^"]*"[^>]*>([^<]+)<\/h3>.*?<h3[^>]*class="[^"]*game-time[^"]*"[^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)<\/h3>.*?<td[^>]*class="[^"]*yesterday-number[^"]*"[^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>.*?<td[^>]*class="[^"]*today-number[^"]*"[^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>/is';
+        // Supports both single and double quotes
+        $pattern = '/<tr[^>]*class=[\'"][^\'">]*game-result[^\'">]*[\'"][^>]*>.*?<h3[^>]*class=[\'"][^\'">]*game-name[^\'">]*[\'"][^>]*>([^<]+)<\/h3>.*?<h3[^>]*class=[\'"][^\'">]*game-time[^\'">]*[\'"][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*yesterday-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*today-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>/is';
         
         preg_match_all($pattern, $html, $matches, PREG_SET_ORDER);
         
@@ -273,8 +274,9 @@ class SattaScraper {
         }
         
         // Pattern 1: satta-king-fast.com - game-result rows with game-name, game-time, yesterday-number, today-number
+        // Supports both single and double quotes in class attributes
         if (strpos($html, 'game-result') !== false && strpos($html, 'game-name') !== false) {
-            preg_match_all('/<tr[^>]*class="[^"]*game-result[^"]*"[^>]*>.*?<h3[^>]*class="[^"]*game-name[^"]*"[^>]*>([^<]+)<\/h3>.*?<h3[^>]*class="[^"]*game-time[^"]*"[^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)<\/h3>.*?<td[^>]*class="[^"]*yesterday-number[^"]*"[^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>.*?<td[^>]*class="[^"]*today-number[^"]*"[^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>/is', $html, $matches, PREG_SET_ORDER);
+            preg_match_all('/<tr[^>]*class=[\'"][^\'">]*game-result[^\'">]*[\'"][^>]*>.*?<h3[^>]*class=[\'"][^\'">]*game-name[^\'">]*[\'"][^>]*>([^<]+)<\/h3>.*?<h3[^>]*class=[\'"][^\'">]*game-time[^\'">]*[\'"][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*yesterday-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*today-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>/is', $html, $matches, PREG_SET_ORDER);
             
             foreach ($matches as $match) {
                 $gameName = trim($match[1]);

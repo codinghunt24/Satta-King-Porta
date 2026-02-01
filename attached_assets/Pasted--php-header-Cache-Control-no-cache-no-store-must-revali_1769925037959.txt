@@ -1,0 +1,373 @@
+<?php
+header('Cache-Control: no-cache, no-store, must-revalidate');
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/lib/ads.php';
+require_once __DIR__ . '/lib/auto_scheduler.php';
+date_default_timezone_set('Asia/Kolkata');
+// Auto scrape trigger
+triggerAutoScrapeIfNeeded($pdo);
+// Last scrape time fetch
+$lastScrapeTime = '';
+try {
+    $lastScrapeResult = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'last_auto_scrape'")->fetchColumn();
+    if ($lastScrapeResult) {
+        $lastScrapeTime = date('d M Y, h:i A', strtotime($lastScrapeResult));
+    }
+} catch(Exception $e) {
+    $lastScrapeTime = '';
+}
+$today = date('Y-m-d');
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+
+
+if (DB_TYPE === 'pgsql') {
+    $allResults = $pdo->query("
+        SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time
+        FROM satta_results sr 
+        WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+        ORDER BY sr.result_time ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $allResults = $pdo->query("
+        SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%Y-%m-%d') as result_date, sr.result_time
+        FROM satta_results sr 
+        WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
+        ORDER BY sr.result_time ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$gameResults = [];
+foreach ($allResults as $r) {
+    $gameName = $r['game_name'];
+    if (!isset($gameResults[$gameName])) {
+        $gameResults[$gameName] = [
+            'name' => $gameName,
+            'time' => $r['result_time'],
+            'today' => '--',
+            'yesterday' => '--'
+        ];
+    }
+    if ($r['result_date'] === $today) {
+        $gameResults[$gameName]['today'] = $r['result'];
+    } else {
+        $gameResults[$gameName]['yesterday'] = $r['result'];
+    }
+}
+
+usort($gameResults, function($a, $b) {
+    return strcmp($a['time'], $b['time']);
+});
+
+if (DB_TYPE === 'pgsql') {
+    $chartData = $pdo->query("
+        SELECT result_date, game_name, result 
+        FROM satta_results 
+        WHERE result_date >= CURRENT_DATE - INTERVAL '7 days'
+        ORDER BY result_date DESC, game_name
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $chartData = $pdo->query("
+        SELECT result_date, game_name, result 
+        FROM satta_results 
+        WHERE result_date >= CURDATE() - INTERVAL 7 DAY
+        ORDER BY result_date DESC, game_name
+    ")->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$analyticsCode = '';
+$googleVerify = '';
+$bingVerify = '';
+try {
+    $settingsQuery = $pdo->query("SELECT setting_key, setting_value FROM site_settings");
+    while ($row = $settingsQuery->fetch(PDO::FETCH_ASSOC)) {
+        if ($row['setting_key'] === 'google_analytics_code') $analyticsCode = $row['setting_value'];
+        if ($row['setting_key'] === 'meta_verification_google') $googleVerify = $row['setting_value'];
+        if ($row['setting_key'] === 'meta_verification_bing') $bingVerify = $row['setting_value'];
+    }
+} catch(Exception $e) {}
+?>
+<?php
+$currentMonth = date('F Y');
+$currentDate = date('d F Y');
+$pageTitle = "Satta King Result Today {$currentDate} | Gali Disawar Faridabad Ghaziabad";
+$pageDesc = "Satta King Result {$currentDate} - Live Satta King Gali, Desawar, Faridabad, Ghaziabad results. Check Satta King Chart {$currentMonth}, Delhi Satta King, Shri Ganesh Satta King fast results.";
+?>
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $pageTitle; ?></title>
+    <meta name="description" content="<?php echo $pageDesc; ?>">
+    <meta name="keywords" content="satta king, sattaking, satta king result, satta king chart, gali result, desawar result, satta king <?php echo date('Y'); ?>, satta king today, delhi satta king, satta king gali, satta king disawar, faridabad result, ghaziabad result, shri ganesh satta king, satta king 786, black satta king, satta king fast, satta king live, satta king online, gali disawar result">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="author" content="Satta King">
+    <meta name="revisit-after" content="1 day">
+    <meta name="language" content="Hindi, English">
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="India">
+    <?php if (!empty($googleVerify)): ?><meta name="google-site-verification" content="<?php echo htmlspecialchars($googleVerify); ?>"><?php endif; ?>
+    <?php if (!empty($bingVerify)): ?><meta name="msvalidate.01" content="<?php echo htmlspecialchars($bingVerify); ?>"><?php endif; ?>
+    <meta property="og:title" content="<?php echo $pageTitle; ?>">
+    <meta property="og:description" content="<?php echo $pageDesc; ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="hi_IN">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo $pageTitle; ?>">
+    <meta name="twitter:description" content="<?php echo $pageDesc; ?>">
+    <link rel="canonical" href="/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <?php if (!empty($analyticsCode)) echo $analyticsCode; ?>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Satta King",
+        "url": "/",
+        "description": "<?php echo $pageDesc; ?>",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Satta King"
+        }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is Satta King?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Satta King is a popular lottery-based number game in India. Results are declared for games like Gali, Desawar, Faridabad, Ghaziabad at specific times daily. Our website provides fast Satta King results for 80+ games updated live."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What time is Desawar result declared?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Desawar Satta King result is declared at 05:00 AM every morning. You can check live Desawar result on our website along with Desawar monthly chart."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What time is Gali result declared?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Gali Satta King result is declared at 11:25 PM every night. Check our website for live Gali result and Gali Satta King chart."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How to check Satta King Chart?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Click on View Record Chart button next to any game to see monthly Satta King chart. We provide charts for Gali, Desawar, Faridabad, Ghaziabad and all 80+ games with complete historical records."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is Faridabad and Ghaziabad result time?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Faridabad result is declared at 06:00 PM and Ghaziabad result at 09:25 PM daily. These are popular Satta King games along with Gali and Desawar."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is Shri Ganesh Satta King?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Shri Ganesh Satta King is a popular afternoon game with result declared at 04:30 PM. Check our website for Shri Ganesh result and chart."
+                }
+            }
+        ]
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Satta <span>King</span></h1>
+                </div>
+                <button class="mobile-menu" onclick="toggleMenu()">&#9776;</button>
+                <nav id="mainNav">
+                    <ul>
+                        <li><a href="https://sattaking.com.im">Home</a></li>
+                        <li><a href="daily-updates.php">Daily Update</a></li>
+                        <li><a href="news.php">News</a></li>
+                        <li><a href="chart.php">Chart</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>Satta King Result <?php echo date('d F Y'); ?></h2>
+            <p>Gali Result | Desawar Result | Faridabad | Ghaziabad | Satta King Chart <?php echo date('F Y'); ?></p>
+               <!-- Last Update Time -->
+    <?php if ($lastScrapeTime): ?>
+    <div style="margin-top: 12px; padding: 8px 20px; background: rgba(251, 191, 36, 0.15); border-radius: 20px; display: inline-block;">
+        <span style="color: #9ca3af; font-size: 13px;">🔄 Last Updated:</span> 
+        <strong style="color: #fbbf24; font-size: 13px;"><?php echo $lastScrapeTime; ?></strong>
+    </div>
+    <?php endif; ?>
+            </div>
+        </section>
+
+        <section class="seo-intro">
+            <p><strong>Satta King</strong> live result <?php echo date('d F Y'); ?> - Check <strong>Gali result</strong>, <strong>Desawar result</strong>, <strong>Faridabad</strong>, <strong>Ghaziabad</strong> and 80+ games results. View <strong>Satta King chart <?php echo date('F Y'); ?></strong> for Gali Desawar monthly records. Get fastest <strong>Delhi Satta King</strong>, <strong>Shri Ganesh Satta King</strong>, <strong>Black Satta King</strong> and <strong>Satta King 786</strong> results updated live.</p>
+        </section>
+        
+        <?php displayAd($pdo, 'header_ad'); ?>
+
+        <section class="results-section" id="results">
+            <h3 class="section-title">Satta King Results - Delhi Satta King Today</h3>
+            <p class="subtitle"><?php echo date('d M', strtotime($yesterday)); ?> & <?php echo date('d M Y', strtotime($today)); ?></p>
+            
+            <div class="game-cards-header">
+                <span class="header-game">Game Name</span>
+                <span class="header-action">Chart</span>
+                <span class="header-results"><?php echo date('d M', strtotime($yesterday)); ?></span>
+                <span class="header-results"><?php echo date('d M', strtotime($today)); ?></span>
+            </div>
+            <div class="game-cards-grid">
+                <?php foreach ($gameResults as $game): ?>
+                <div class="game-card">
+                    <div class="game-card-header">
+                        <h4 class="game-card-name"><?php echo htmlspecialchars($game['name']); ?></h4>
+                        <span class="game-card-time"><?php echo date('h:i A', strtotime($game['time'])); ?></span>
+                    </div>
+                    <a href="chart.php?game=<?php echo urlencode($game['name']); ?>" class="game-card-link">View Record Chart</a>
+                    <div class="game-card-results">
+                        <div class="result-box">
+                            <span class="result-label"><?php echo date('d M', strtotime($yesterday)); ?></span>
+                            <span class="result-value <?php echo $game['yesterday'] !== '--' ? 'has-result' : ''; ?>"><?php echo htmlspecialchars($game['yesterday']); ?></span>
+                        </div>
+                        <div class="result-box today">
+                            <span class="result-label"><?php echo date('d M', strtotime($today)); ?></span>
+                            <span class="result-value <?php echo $game['today'] !== '--' ? 'has-result today-result' : ''; ?>"><?php echo htmlspecialchars($game['today']); ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="refresh-btn" onclick="location.reload()">Refresh Satta King Results</button>
+            </div>
+            
+            <?php displayAd($pdo, 'after_result'); ?>
+        </section>
+
+        <section class="chart-section" id="chart">
+            <h3 class="section-title">Satta King Chart - Gali, Desawar, Faridabad, Ghaziabad Weekly</h3>
+            <div class="results-table-container">
+                <table class="chart-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Gali</th>
+                            <th>Desawar</th>
+                            <th>Faridabad</th>
+                            <th>Ghaziabad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $chartByDate = [];
+                        foreach ($chartData as $row) {
+                            $date = $row['result_date'];
+                            if (!isset($chartByDate[$date])) {
+                                $chartByDate[$date] = [];
+                            }
+                            $chartByDate[$date][$row['game_name']] = $row['result'];
+                        }
+                        
+                        foreach ($chartByDate as $date => $gameResultsChart):
+                        ?>
+                        <tr>
+                            <td><?php echo date('d/m/Y', strtotime($date)); ?></td>
+                            <td><?php echo $gameResultsChart['Gali'] ?? '-'; ?></td>
+                            <td><?php echo $gameResultsChart['Desawar'] ?? '-'; ?></td>
+                            <td><?php echo $gameResultsChart['Faridabad'] ?? '-'; ?></td>
+                            <td><?php echo $gameResultsChart['Ghaziabad'] ?? '-'; ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="faq-section" id="faq">
+            <h3 class="section-title">Satta King FAQ - Gali Desawar Result</h3>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <h4 class="faq-question">What is Satta King?</h4>
+                    <p class="faq-answer">Satta King is a popular lottery-based number game in India. Results are declared for games like Gali, Desawar, Faridabad, Ghaziabad at specific times daily. Our website provides fast Satta King results for 80+ games updated live.</p>
+                </div>
+                <div class="faq-item">
+                    <h4 class="faq-question">What time is Desawar result declared?</h4>
+                    <p class="faq-answer">Desawar Satta King result is declared at 05:00 AM every morning. You can check live Desawar result on our website along with Desawar monthly chart.</p>
+                </div>
+                <div class="faq-item">
+                    <h4 class="faq-question">What time is Gali result declared?</h4>
+                    <p class="faq-answer">Gali Satta King result is declared at 11:25 PM every night. Check our website for live Gali result and Gali Satta King chart <?php echo date('F Y'); ?>.</p>
+                </div>
+                <div class="faq-item">
+                    <h4 class="faq-question">How to check Satta King Chart?</h4>
+                    <p class="faq-answer">Click on "View Record Chart" button next to any game to see monthly Satta King chart. We provide charts for Gali, Desawar, Faridabad, Ghaziabad and all 80+ games with complete historical records.</p>
+                </div>
+                <div class="faq-item">
+                    <h4 class="faq-question">What is Faridabad and Ghaziabad result time?</h4>
+                    <p class="faq-answer">Faridabad result is declared at 06:00 PM and Ghaziabad result at 09:25 PM daily. These are popular Satta King games along with Gali and Desawar.</p>
+                </div>
+                <div class="faq-item">
+                    <h4 class="faq-question">What is Shri Ganesh Satta King?</h4>
+                    <p class="faq-answer">Shri Ganesh Satta King is a popular afternoon game with result declared at 04:30 PM. Check our website for Shri Ganesh result and chart.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="disclaimer">
+            <p><strong>Disclaimer:</strong> This website is for informational purposes only. We do not promote or encourage any form of gambling or betting. Please check your local laws before participating in any games.</p>
+        </div>
+        
+        <?php displayAd($pdo, 'footer_ad'); ?>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="page.php?slug=about">About</a>
+                <a href="page.php?slug=contact">Contact</a>
+                <a href="page.php?slug=disclaimer">Disclaimer</a>
+                <a href="page.php?slug=privacy-policy">Privacy Policy</a>
+                <a href="page.php?slug=terms-conditions">Terms & Conditions</a>
+            </div>
+            <p>&copy; <?php echo date('Y'); ?> Satta King. All Rights Reserved.</p>
+            <p>Satta King Fast Results | Delhi Satta King | Satta King 786 | Satta King Chart</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('mainNav').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
