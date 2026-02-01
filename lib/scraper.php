@@ -264,6 +264,12 @@ class SattaScraper {
         return ucwords(strtolower($name));
     }
     
+    private function isValidGameName($name) {
+        $invalidNames = ['live', 'next', 'rest', 'board', 'section', 'header', 'title'];
+        $lowerName = strtolower(trim($name));
+        return !in_array($lowerName, $invalidNames) && strlen($name) > 2;
+    }
+    
     private function parseHtml($html) {
         $data = [];
         $today = date('Y-m-d');
@@ -283,6 +289,11 @@ class SattaScraper {
                 $timeStr = trim($match[2]);
                 $yesterdayResult = trim($match[3]);
                 $todayResult = trim($match[4]);
+                
+                // Skip invalid game names (section headers like LIVE, NEXT, REST)
+                if (!$this->isValidGameName($gameName)) {
+                    continue;
+                }
                 
                 $time24 = date('H:i:s', strtotime($timeStr));
                 $normalizedName = $this->normalizeGameName($gameName);
