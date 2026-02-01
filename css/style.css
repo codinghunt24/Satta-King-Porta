@@ -466,7 +466,7 @@ footer p {
 .game-name-cell {
     font-weight: 700;
     font-size: 1.1rem;
-    color: #1e3a5f;
+    color: #FFD700;
     text-transform: uppercase;
     text-align: left !important;
     padding-left: 20px !important;
@@ -484,11 +484,11 @@ footer p {
 }
 
 .result-cell.has-result {
-    color: #ffffff;
+    color: #FFD700;
 }
 
 .result-cell.today-result {
-    color: #ffffff;
+    color: #FFD700;
     font-size: 1.5rem;
 }
 
