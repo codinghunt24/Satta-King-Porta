@@ -240,20 +240,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dateFormatTitle = date('j M Y', strtotime($publishDate));
         $dateFormatUrl = strtolower(date('j-F-Y', strtotime($publishDate)));
         
-        $gamesWithResults = $pdo->query("
-            SELECT DISTINCT game_name FROM satta_results 
-            WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''
-            ORDER BY game_name
+        $allGames = $pdo->query("
+            SELECT DISTINCT name FROM games WHERE is_active = 1 ORDER BY name
         ")->fetchAll(PDO::FETCH_COLUMN);
         
-        if (count($gamesWithResults) == 0) {
-            $message = "No results available for today to publish!";
+        if (empty($allGames)) {
+            $allGames = $pdo->query("
+                SELECT DISTINCT game_name FROM satta_results ORDER BY game_name
+            ")->fetchAll(PDO::FETCH_COLUMN);
+        }
+        
+        if (count($allGames) == 0) {
+            $message = "No games found to publish!";
             $messageType = 'error';
         } else {
             $publishedCount = 0;
             $skippedCount = 0;
             
-            foreach ($gamesWithResults as $gameName) {
+            foreach ($allGames as $gameName) {
                 $slugGame = strtolower(str_replace(' ', '-', $gameName));
                 $slugGame = preg_replace('/[^a-z0-9\-]/', '', $slugGame);
                 
@@ -753,15 +757,17 @@ $totalResults = $pdo->query("SELECT COUNT(*) FROM satta_results WHERE result_dat
 
             <?php elseif ($currentPage === 'posts'): 
                 $publishedPosts = $pdo->query("SELECT * FROM posts ORDER BY post_date DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
-                $todayGamesCount = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''")->fetchColumn();
+                $totalActiveGames = $pdo->query("SELECT COUNT(*) FROM games WHERE is_active = 1")->fetchColumn();
+                $gamesWithResults = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result_date = CURRENT_DATE AND result IS NOT NULL AND result != ''")->fetchColumn();
             ?>
             <div class="admin-card">
                 <h3 class="card-title">Publish Daily Update Post</h3>
-                <p class="form-hint">Click the button below to auto-generate and publish today's Satta King results post. Only games with results will be included.</p>
+                <p class="form-hint">Click the button below to publish posts for ALL games. Results will auto-update when they become available.</p>
                 
                 <div style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
                     <p style="color: #10b981; margin-bottom: 10px;"><strong>Today's Stats:</strong></p>
-                    <p style="color: #d1d5db;">Games with results: <strong style="color: #ffd700;"><?php echo $todayGamesCount; ?></strong></p>
+                    <p style="color: #d1d5db;">Total Active Games: <strong style="color: #ffd700;"><?php echo $totalActiveGames; ?></strong></p>
+                    <p style="color: #d1d5db;">Games with Results: <strong style="color: #10b981;"><?php echo $gamesWithResults; ?></strong></p>
                     <p style="color: #d1d5db;">Date: <strong style="color: #ffd700;"><?php echo date('d M Y'); ?></strong></p>
                 </div>
                 
