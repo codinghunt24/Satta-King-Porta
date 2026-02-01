@@ -10,7 +10,7 @@ if (empty($slug)) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT * FROM site_pages WHERE slug = ? AND is_published = true");
+$stmt = $pdo->prepare("SELECT * FROM site_pages WHERE slug = ? AND is_published = 1");
 $stmt->execute([$slug]);
 $page = $stmt->fetch(PDO::FETCH_ASSOC);
 
