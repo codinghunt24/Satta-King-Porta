@@ -32,6 +32,7 @@ $resultToday = $pdo->prepare("
 ");
 $resultToday->execute([$postDate, $gameName]);
 $todayResult = $resultToday->fetch(PDO::FETCH_ASSOC);
+$hasValidResult = $todayResult && !empty($todayResult['result']) && $todayResult['result'] !== 'XX' && $todayResult['result'] !== 'Waiting';
 
 $last7Days = $pdo->prepare("
     SELECT result_date, result 
@@ -398,7 +399,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
                 "name": "What is <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?>?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "<?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?> is <?php echo $todayResult ? htmlspecialchars($todayResult['result']) : 'awaiting declaration'; ?>. Check our website for live updates."
+                    "text": "<?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?> is <?php echo $hasValidResult ? htmlspecialchars($todayResult['result']) : 'awaiting declaration'; ?>. Check our website for live updates."
                 }
             },
             {
@@ -406,7 +407,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
                 "name": "What time is <?php echo htmlspecialchars($gameName); ?> result declared?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "<?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $todayResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'fixed time'; ?> every day."
+                    "text": "<?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $hasValidResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'its scheduled time'; ?> every day."
                 }
             },
             {
@@ -499,7 +500,7 @@ $formattedDate = date('d F Y', strtotime($postDate));
                     <?php echo htmlspecialchars($gameName); ?> is one of the most popular Satta games with thousands of players checking results daily.
                 </p>
                 
-                <?php if ($todayResult): ?>
+                <?php if ($hasValidResult): ?>
                 <div class="result-card-wrapper" style="text-align: center; padding: 20px 10px;">
                     <div class="result-main-card" style="background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #e94560 100%); padding: 30px 40px; border-radius: 20px; display: inline-block; box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4); max-width: 100%; animation: pulse 2s infinite;">
                         <div style="color: rgba(255,255,255,0.9); font-size: 1rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px;"><?php echo htmlspecialchars($gameName); ?></div>
@@ -631,12 +632,12 @@ $formattedDate = date('d F Y', strtotime($postDate));
                 
                 <div class="faq-item">
                     <p class="faq-question">What is <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?>?</p>
-                    <p class="faq-answer">The <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $dayName; ?>, <?php echo $formattedDate; ?> is <strong style="color: #ffd700;"><?php echo $todayResult ? htmlspecialchars($todayResult['result']) : 'awaiting declaration'; ?></strong>. Results are updated live on this page as soon as they are announced. Bookmark this page for instant access to daily results.</p>
+                    <p class="faq-answer">The <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $dayName; ?>, <?php echo $formattedDate; ?> is <strong style="color: #ffd700;"><?php echo $hasValidResult ? htmlspecialchars($todayResult['result']) : 'Waiting'; ?></strong>. Results are updated live on this page as soon as they are announced. Bookmark this page for instant access to daily results.</p>
                 </div>
                 
                 <div class="faq-item">
                     <p class="faq-question">What time is <?php echo htmlspecialchars($gameName); ?> result declared?</p>
-                    <p class="faq-answer"><?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $todayResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'its scheduled time'; ?> every day. The timing remains consistent, and our website updates results within seconds of the official announcement.</p>
+                    <p class="faq-answer"><?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $hasValidResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'its scheduled time'; ?> every day. The timing remains consistent, and our website updates results within seconds of the official announcement.</p>
                 </div>
                 
                 <div class="faq-item">
