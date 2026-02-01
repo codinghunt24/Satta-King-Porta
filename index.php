@@ -12,10 +12,12 @@ $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
 $allResults = $pdo->query("
-    SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time
+    SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time,
+           COALESCE(g.display_order, 999) as display_order
     FROM satta_results sr 
+    LEFT JOIN games g ON g.name = sr.game_name
     WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
-    ORDER BY sr.result_time ASC
+    ORDER BY COALESCE(g.display_order, 999) ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 $gameResults = [];
@@ -26,7 +28,8 @@ foreach ($allResults as $r) {
             'name' => $gameName,
             'time' => $r['result_time'],
             'today' => '--',
-            'yesterday' => '--'
+            'yesterday' => '--',
+            'order' => $r['display_order']
         ];
     }
     if ($r['result_date'] === $today) {
@@ -37,7 +40,7 @@ foreach ($allResults as $r) {
 }
 
 usort($gameResults, function($a, $b) {
-    return strcmp($a['time'], $b['time']);
+    return $a['order'] - $b['order'];
 });
 
 $chartData = $pdo->query("

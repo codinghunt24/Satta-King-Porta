@@ -284,6 +284,7 @@ class SattaScraper {
         if (strpos($html, 'game-result') !== false && strpos($html, 'game-name') !== false) {
             preg_match_all('/<tr[^>]*class=[\'"][^\'">]*game-result[^\'">]*[\'"][^>]*>.*?<h3[^>]*class=[\'"][^\'">]*game-name[^\'">]*[\'"][^>]*>([^<]+)<\/h3>.*?<h3[^>]*class=[\'"][^\'">]*game-time[^\'">]*[\'"][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*yesterday-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>.*?<td[^>]*class=[\'"][^\'">]*today-number[^\'">]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)<\/h3>/is', $html, $matches, PREG_SET_ORDER);
             
+            $gameOrder = 0;
             foreach ($matches as $match) {
                 $gameName = trim($match[1]);
                 $timeStr = trim($match[2]);
@@ -295,8 +296,12 @@ class SattaScraper {
                     continue;
                 }
                 
+                $gameOrder++;
                 $time24 = date('H:i:s', strtotime($timeStr));
                 $normalizedName = $this->normalizeGameName($gameName);
+                
+                // Update game display order
+                $this->pdo->prepare("UPDATE games SET display_order = ? WHERE name = ?")->execute([$gameOrder, $normalizedName]);
                 
                 // Save yesterday result (only if actual number)
                 if (preg_match('/^\d{2}$/', $yesterdayResult)) {
