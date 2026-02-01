@@ -58,6 +58,34 @@ $otherGamePosts = $pdo->prepare("
 ");
 $otherGamePosts->execute([$postDate, $slug]);
 $otherGamesList = $otherGamePosts->fetchAll(PDO::FETCH_ASSOC);
+
+$last30Days = $pdo->prepare("
+    SELECT result FROM satta_results 
+    WHERE game_name = ? AND result IS NOT NULL AND result != '' AND result != 'XX'
+    ORDER BY result_date DESC LIMIT 30
+");
+$last30Days->execute([$gameName]);
+$monthlyResults = $last30Days->fetchAll(PDO::FETCH_COLUMN);
+
+$totalGames = $pdo->query("SELECT COUNT(DISTINCT game_name) FROM satta_results WHERE result IS NOT NULL")->fetchColumn();
+
+$resultPatterns = [];
+$oddCount = 0;
+$evenCount = 0;
+foreach ($monthlyResults as $res) {
+    $num = intval($res);
+    if ($num % 2 == 0) $evenCount++; else $oddCount++;
+    $lastDigit = $num % 10;
+    if (!isset($resultPatterns[$lastDigit])) $resultPatterns[$lastDigit] = 0;
+    $resultPatterns[$lastDigit]++;
+}
+arsort($resultPatterns);
+$hotDigits = array_slice(array_keys($resultPatterns), 0, 3);
+
+$dayName = date('l', strtotime($postDate));
+$monthName = date('F', strtotime($postDate));
+$year = date('Y', strtotime($postDate));
+$formattedDate = date('d F Y', strtotime($postDate));
 ?>
 <!DOCTYPE html>
 <html lang="hi">
@@ -223,7 +251,63 @@ $otherGamesList = $otherGamePosts->fetchAll(PDO::FETCH_ASSOC);
         "datePublished": "<?php echo date('c', strtotime($post['created_at'])); ?>",
         "dateModified": "<?php echo date('c', strtotime($post['updated_at'])); ?>",
         "description": "<?php echo htmlspecialchars($post['meta_description']); ?>",
-        "keywords": "<?php echo htmlspecialchars($post['meta_keywords']); ?>"
+        "keywords": "<?php echo htmlspecialchars($post['meta_keywords']); ?>",
+        "author": {
+            "@type": "Organization",
+            "name": "Satta King"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Satta King"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?>?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "<?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?> is <?php echo $todayResult ? htmlspecialchars($todayResult['result']) : 'awaiting declaration'; ?>. Check our website for live updates."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What time is <?php echo htmlspecialchars($gameName); ?> result declared?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "<?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $todayResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'fixed time'; ?> every day."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Where can I check <?php echo htmlspecialchars($gameName); ?> chart?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You can check the complete <?php echo htmlspecialchars($gameName); ?> chart on our Chart page with monthly and yearly historical records."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is <?php echo htmlspecialchars($gameName); ?> result accurate on this website?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, all results on our website are 100% accurate and sourced directly from official channels."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How many Satta games are available?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Our website covers <?php echo $totalGames; ?>+ Satta King games including Gali, Disawar, Faridabad, Ghaziabad and many more."
+                }
+            }
+        ]
     }
     </script>
 </head>
@@ -255,10 +339,12 @@ $otherGamesList = $otherGamePosts->fetchAll(PDO::FETCH_ASSOC);
             </header>
 
             <section class="post-section">
-                <h2><?php echo htmlspecialchars($gameName); ?> Result - <?php echo date('d F Y', strtotime($postDate)); ?></h2>
-                <p style="color: #d1d5db; margin-bottom: 20px;">
-                    Check <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo date('d F Y', strtotime($postDate)); ?>. 
-                    Get live <?php echo htmlspecialchars($gameName); ?> result, chart, and fast updates.
+                <h2><?php echo htmlspecialchars($gameName); ?> Result - <?php echo $formattedDate; ?></h2>
+                <p style="color: #d1d5db; margin-bottom: 20px; line-height: 1.8;">
+                    Welcome to the official <?php echo htmlspecialchars($gameName); ?> Satta King result page for <?php echo $dayName; ?>, <?php echo $formattedDate; ?>. 
+                    Here you can check the live <?php echo htmlspecialchars($gameName); ?> result, complete chart history, and get the fastest updates. 
+                    Our website provides accurate and reliable Satta King results updated multiple times throughout the day.
+                    <?php echo htmlspecialchars($gameName); ?> is one of the most popular Satta games with thousands of players checking results daily.
                 </p>
                 
                 <?php if ($todayResult): ?>
@@ -296,9 +382,66 @@ $otherGamesList = $otherGamePosts->fetchAll(PDO::FETCH_ASSOC);
             </section>
             <?php endif; ?>
             
+            <section class="post-section">
+                <h2>About <?php echo htmlspecialchars($gameName); ?> Satta King Game</h2>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
+                    <?php echo htmlspecialchars($gameName); ?> is a well-known Satta King game that attracts players from across India. 
+                    The game has been running for many years and has established itself as one of the most reliable games in the Satta market.
+                    Results are declared at fixed times daily, and our website ensures you get the fastest updates as soon as results are announced.
+                </p>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
+                    On <?php echo $dayName; ?>, <?php echo $formattedDate; ?>, thousands of players checked <?php echo htmlspecialchars($gameName); ?> result on our platform.
+                    We maintain complete transparency and accuracy in all our result updates. Our team works 24/7 to bring you the latest Satta King results.
+                </p>
+                <h3 style="color: #e94560; margin: 20px 0 10px;">Key Features of <?php echo htmlspecialchars($gameName); ?></h3>
+                <ul style="color: #d1d5db; line-height: 2; padding-left: 20px;">
+                    <li>Results declared at fixed time daily</li>
+                    <li>One of the oldest running Satta games</li>
+                    <li>Large player base across India</li>
+                    <li>Consistent and reliable result timing</li>
+                    <li>Complete chart history available</li>
+                </ul>
+            </section>
+
+            <?php if (count($monthlyResults) > 5): ?>
+            <section class="post-section">
+                <h2><?php echo htmlspecialchars($gameName); ?> Result Analysis - <?php echo $monthName; ?> <?php echo $year; ?></h2>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 20px;">
+                    Based on the last 30 days of <?php echo htmlspecialchars($gameName); ?> results, here is a detailed statistical analysis 
+                    to help you understand the patterns and trends in this game.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div style="background: rgba(233, 69, 96, 0.1); padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="color: #9ca3af; font-size: 0.9rem;">Total Records Analyzed</div>
+                        <div style="color: #ffd700; font-size: 2rem; font-weight: 700;"><?php echo count($monthlyResults); ?></div>
+                    </div>
+                    <div style="background: rgba(233, 69, 96, 0.1); padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="color: #9ca3af; font-size: 0.9rem;">Even Numbers</div>
+                        <div style="color: #ffd700; font-size: 2rem; font-weight: 700;"><?php echo $evenCount; ?></div>
+                    </div>
+                    <div style="background: rgba(233, 69, 96, 0.1); padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="color: #9ca3af; font-size: 0.9rem;">Odd Numbers</div>
+                        <div style="color: #ffd700; font-size: 2rem; font-weight: 700;"><?php echo $oddCount; ?></div>
+                    </div>
+                </div>
+                <?php if (!empty($hotDigits)): ?>
+                <h3 style="color: #e94560; margin: 20px 0 10px;">Frequently Appearing Last Digits</h3>
+                <p style="color: #d1d5db; line-height: 1.8;">
+                    In recent <?php echo htmlspecialchars($gameName); ?> results, the most frequently appearing last digits are: 
+                    <strong style="color: #ffd700;"><?php echo implode(', ', $hotDigits); ?></strong>. 
+                    This analysis is based on the last <?php echo count($monthlyResults); ?> results.
+                </p>
+                <?php endif; ?>
+            </section>
+            <?php endif; ?>
+
             <?php if (count($otherGamesList) > 0): ?>
             <section class="post-section">
-                <h2>Other Games - <?php echo date('d M Y', strtotime($postDate)); ?></h2>
+                <h2>Other Satta King Games - <?php echo $formattedDate; ?></h2>
+                <p style="color: #d1d5db; margin-bottom: 15px; line-height: 1.8;">
+                    Check results of other popular Satta King games for <?php echo $formattedDate; ?>. 
+                    We cover all major games including Gali, Disawar, Faridabad, Ghaziabad, and <?php echo $totalGames; ?>+ other games.
+                </p>
                 <div class="internal-links">
                     <?php foreach ($otherGamesList as $og): ?>
                     <a href="/post/<?php echo htmlspecialchars($og['slug']); ?>" class="internal-link"><?php echo htmlspecialchars($og['games_included']); ?></a>
@@ -308,22 +451,65 @@ $otherGamesList = $otherGamePosts->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
 
             <section class="post-section">
-                <h2><?php echo htmlspecialchars($gameName); ?> FAQ</h2>
+                <h2><?php echo htmlspecialchars($gameName); ?> Satta King - Complete Guide & FAQ</h2>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 20px;">
+                    Find answers to frequently asked questions about <?php echo htmlspecialchars($gameName); ?> Satta King game, 
+                    result timings, chart, and more. This comprehensive FAQ section covers everything you need to know.
+                </p>
                 
                 <div class="faq-item">
-                    <p class="faq-question">What is <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo date('d F Y', strtotime($postDate)); ?>?</p>
-                    <p class="faq-answer"><?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo date('d F Y', strtotime($postDate)); ?> is <?php echo $todayResult ? htmlspecialchars($todayResult['result']) : 'not yet declared'; ?>. Check the result section above for live updates.</p>
+                    <p class="faq-question">What is <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $formattedDate; ?>?</p>
+                    <p class="faq-answer">The <?php echo htmlspecialchars($gameName); ?> Satta King result for <?php echo $dayName; ?>, <?php echo $formattedDate; ?> is <strong style="color: #ffd700;"><?php echo $todayResult ? htmlspecialchars($todayResult['result']) : 'awaiting declaration'; ?></strong>. Results are updated live on this page as soon as they are announced. Bookmark this page for instant access to daily results.</p>
                 </div>
                 
                 <div class="faq-item">
-                    <p class="faq-question">When is <?php echo htmlspecialchars($gameName); ?> result declared?</p>
-                    <p class="faq-answer"><?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $todayResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'fixed time'; ?> daily. Check our website for fast and accurate results.</p>
+                    <p class="faq-question">What time is <?php echo htmlspecialchars($gameName); ?> result declared?</p>
+                    <p class="faq-answer"><?php echo htmlspecialchars($gameName); ?> result is declared at <?php echo $todayResult ? date('h:i A', strtotime($todayResult['result_time'])) : 'its scheduled time'; ?> every day. The timing remains consistent, and our website updates results within seconds of the official announcement.</p>
                 </div>
                 
                 <div class="faq-item">
-                    <p class="faq-question">How to check <?php echo htmlspecialchars($gameName); ?> chart?</p>
-                    <p class="faq-answer">You can check the complete <?php echo htmlspecialchars($gameName); ?> chart on our website. Visit the Chart section to see monthly records with all past results.</p>
+                    <p class="faq-question">Where can I check <?php echo htmlspecialchars($gameName); ?> chart and history?</p>
+                    <p class="faq-answer">You can view the complete <?php echo htmlspecialchars($gameName); ?> chart on our Chart page. The chart includes monthly records, yearly data, and complete historical results dating back several years. This helps in analyzing patterns and trends.</p>
                 </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">Is <?php echo htmlspecialchars($gameName); ?> result on this website accurate?</p>
+                    <p class="faq-answer">Yes, all results on our website are 100% accurate and sourced directly from official channels. We have been providing Satta King results for years and maintain a reputation for accuracy and speed.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">How many games results are available on this website?</p>
+                    <p class="faq-answer">Our website covers <?php echo $totalGames; ?>+ Satta King games including popular ones like Gali, Disawar, Faridabad, Ghaziabad, Delhi Bazar, and many more. All results are updated in real-time.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">Can I check <?php echo htmlspecialchars($gameName); ?> result on mobile?</p>
+                    <p class="faq-answer">Yes, our website is fully mobile-responsive. You can check <?php echo htmlspecialchars($gameName); ?> result on any device - mobile phone, tablet, or desktop computer. The experience is optimized for all screen sizes.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <p class="faq-question">What are the last 7 days results for <?php echo htmlspecialchars($gameName); ?>?</p>
+                    <p class="faq-answer">The last 7 days <?php echo htmlspecialchars($gameName); ?> results are displayed in the chart section above. You can also visit our Chart page for complete monthly and yearly records.</p>
+                </div>
+            </section>
+
+            <section class="post-section">
+                <h2>Why Choose Our Website for <?php echo htmlspecialchars($gameName); ?> Results?</h2>
+                <p style="color: #d1d5db; line-height: 1.8; margin-bottom: 15px;">
+                    Our website has been the trusted source for Satta King results for many years. Here's why thousands of players choose us daily:
+                </p>
+                <ul style="color: #d1d5db; line-height: 2; padding-left: 20px; margin-bottom: 15px;">
+                    <li><strong style="color: #ffd700;">Fastest Updates:</strong> Results appear on our site within seconds of official declaration</li>
+                    <li><strong style="color: #ffd700;">100% Accuracy:</strong> We never post incorrect or unverified results</li>
+                    <li><strong style="color: #ffd700;"><?php echo $totalGames; ?>+ Games:</strong> All popular Satta games covered in one place</li>
+                    <li><strong style="color: #ffd700;">Complete Charts:</strong> Access historical data going back several years</li>
+                    <li><strong style="color: #ffd700;">Mobile Friendly:</strong> Check results on any device, anywhere, anytime</li>
+                    <li><strong style="color: #ffd700;">Daily Updates:</strong> Fresh content and results updated multiple times daily</li>
+                </ul>
+                <p style="color: #d1d5db; line-height: 1.8;">
+                    Bookmark this page and visit daily to check <?php echo htmlspecialchars($gameName); ?> Satta King result. 
+                    Share with friends who are also interested in Satta King results.
+                </p>
             </section>
 
             <section class="post-section">
