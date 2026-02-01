@@ -534,8 +534,10 @@ footer p {
     }
     
     .game-meta {
-        flex-direction: column;
-        gap: 2px;
+        flex-direction: row;
+        gap: 6px;
+        flex-wrap: nowrap;
+        align-items: center;
     }
     
     .game-time-inline {
