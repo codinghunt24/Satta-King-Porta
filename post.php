@@ -232,14 +232,114 @@ $formattedDate = date('d F Y', strtotime($postDate));
             color: #fff;
         }
         @media (max-width: 768px) {
+            .post-container {
+                padding: 15px 10px;
+            }
+            .post-header {
+                margin-bottom: 20px;
+            }
             .post-header h1 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
+                line-height: 1.4;
+            }
+            .post-meta {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
+            }
+            .post-meta span {
+                margin-left: 0 !important;
+            }
+            .breadcrumb {
+                font-size: 0.8rem;
+                flex-wrap: wrap;
+                text-align: center;
+            }
+            .toc-box {
+                padding: 15px;
+            }
+            .toc-box h3 {
+                font-size: 1rem;
+            }
+            .toc-box ul li {
+                font-size: 0.9rem;
+            }
+            .post-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            .post-section h2 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            .post-section h3 {
+                font-size: 1rem;
+            }
+            .post-section p {
+                font-size: 0.9rem;
+                line-height: 1.7;
+            }
+            .post-section ul {
+                padding-left: 15px;
+                font-size: 0.9rem;
             }
             .results-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .result-item {
+                padding: 10px;
+            }
+            .result-number {
+                font-size: 1.5rem;
+            }
+            .faq-item {
+                margin-bottom: 15px;
+            }
+            .faq-question {
+                font-size: 0.95rem;
+            }
+            .faq-answer {
+                font-size: 0.9rem;
+            }
+            .internal-links {
+                gap: 8px;
+            }
+            .internal-link {
+                padding: 6px 12px;
+                font-size: 0.8rem;
             }
             .nav-links {
                 flex-direction: column;
+            }
+            .nav-link {
+                min-width: 100%;
+            }
+            .admin-table {
+                font-size: 0.85rem;
+            }
+            .admin-table th,
+            .admin-table td {
+                padding: 8px 5px;
+            }
+        }
+        @media (max-width: 480px) {
+            .post-header h1 {
+                font-size: 1.1rem;
+            }
+            .post-section {
+                padding: 12px;
+            }
+            .post-section h2 {
+                font-size: 1rem;
+            }
+            .toc-box ul li {
+                font-size: 0.85rem;
+                margin-bottom: 6px;
+            }
+            .result-number {
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -400,15 +500,35 @@ $formattedDate = date('d F Y', strtotime($postDate));
                 </p>
                 
                 <?php if ($todayResult): ?>
-                <div style="text-align: center; padding: 30px;">
-                    <div style="background: linear-gradient(135deg, #e94560, #ff6b6b); padding: 40px; border-radius: 20px; display: inline-block;">
-                        <div style="color: #fff; font-size: 1.2rem; margin-bottom: 10px;"><?php echo htmlspecialchars($gameName); ?></div>
-                        <div style="color: #ffd700; font-size: 4rem; font-weight: 700;"><?php echo htmlspecialchars($todayResult['result']); ?></div>
-                        <div style="color: #fff; font-size: 1rem; margin-top: 10px;"><?php echo date('h:i A', strtotime($todayResult['result_time'])); ?></div>
+                <div class="result-card-wrapper" style="text-align: center; padding: 20px 10px;">
+                    <div class="result-main-card" style="background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #e94560 100%); padding: 30px 40px; border-radius: 20px; display: inline-block; box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4); max-width: 100%; animation: pulse 2s infinite;">
+                        <div style="color: rgba(255,255,255,0.9); font-size: 1rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px;"><?php echo htmlspecialchars($gameName); ?></div>
+                        <div class="main-result-number" style="color: #ffd700; font-size: 3.5rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1;"><?php echo htmlspecialchars($todayResult['result']); ?></div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 10px;">
+                            <span style="background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 15px;">
+                                <?php echo date('h:i A', strtotime($todayResult['result_time'])); ?>
+                            </span>
+                        </div>
                     </div>
                 </div>
+                <style>
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.02); }
+                    }
+                    @media (max-width: 480px) {
+                        .main-result-number { font-size: 2.5rem !important; }
+                        .result-main-card { padding: 20px 25px !important; }
+                    }
+                </style>
                 <?php else: ?>
-                <p style="color: #9ca3af; text-align: center;">Result will be updated soon.</p>
+                <div style="text-align: center; padding: 30px;">
+                    <div style="background: linear-gradient(135deg, #374151, #1f2937); padding: 30px 40px; border-radius: 20px; display: inline-block;">
+                        <div style="color: #9ca3af; font-size: 1rem; margin-bottom: 10px;"><?php echo htmlspecialchars($gameName); ?></div>
+                        <div style="color: #f59e0b; font-size: 1.5rem; font-weight: 600;">Waiting for Result</div>
+                        <div style="color: #6b7280; font-size: 0.9rem; margin-top: 10px;">Result will be updated soon</div>
+                    </div>
+                </div>
                 <?php endif; ?>
             </section>
 
