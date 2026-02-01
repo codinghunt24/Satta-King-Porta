@@ -142,11 +142,11 @@ try {
                                     <span class="game-time-inline"><?php echo date('h:i A', strtotime($game['time'])); ?></span>
                                 </div>
                             </td>
-                            <td class="result-cell <?php echo $game['yesterday'] !== '--' ? 'has-result' : ''; ?>">
-                                <?php echo htmlspecialchars($game['yesterday']); ?>
+                            <td class="result-cell <?php echo ($game['yesterday'] !== '--' && $game['yesterday'] !== 'XX') ? 'has-result' : ''; ?>">
+                                <?php echo ($game['yesterday'] === 'XX' || $game['yesterday'] === '--') ? '--' : htmlspecialchars($game['yesterday']); ?>
                             </td>
-                            <td class="result-cell <?php echo $game['today'] !== '--' ? 'has-result today-result' : ''; ?>">
-                                <?php echo htmlspecialchars($game['today']); ?>
+                            <td class="result-cell <?php echo ($game['today'] !== '--' && $game['today'] !== 'XX') ? 'has-result today-result' : 'waiting'; ?>">
+                                <?php echo ($game['today'] === 'XX') ? 'Waiting' : htmlspecialchars($game['today']); ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

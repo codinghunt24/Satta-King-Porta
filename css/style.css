@@ -472,6 +472,13 @@ footer p {
     font-size: 1.5rem;
 }
 
+.result-cell.waiting {
+    color: #f59e0b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-style: italic;
+}
+
 @media (max-width: 768px) {
     .results-table th,
     .results-table td {
