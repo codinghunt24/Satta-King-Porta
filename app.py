@@ -245,6 +245,9 @@ class SattaScraper:
             conn = get_db()
             cursor = get_cursor(conn)
             
+            # Clear all existing games and insert fresh ones from source
+            cursor.execute("DELETE FROM games")
+            
             for row in data:
                 display_order = row.get('display_order', 999)
                 if USE_MYSQL:
@@ -375,18 +378,18 @@ def index():
                 SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%%Y-%%m-%%d') as result_date, 
                        sr.result_time, g.time_slot, g.display_order
                 FROM satta_results sr 
-                LEFT JOIN games g ON g.name = sr.game_name
+                INNER JOIN games g ON g.name = sr.game_name
                 WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
-                ORDER BY COALESCE(g.display_order, 999) ASC, sr.game_name ASC
+                ORDER BY g.display_order ASC, sr.game_name ASC
             """)
         else:
             cursor.execute("""
                 SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, 
                        sr.result_time, g.time_slot, g.display_order
                 FROM satta_results sr 
-                LEFT JOIN games g ON g.name = sr.game_name
+                INNER JOIN games g ON g.name = sr.game_name
                 WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
-                ORDER BY COALESCE(g.display_order, 999) ASC, sr.game_name ASC
+                ORDER BY g.display_order ASC, sr.game_name ASC
             """)
         all_results = cursor.fetchall()
         
