@@ -464,59 +464,61 @@ def index():
 def post(slug):
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM posts WHERE slug = %s", (slug,))
-            post_data = cursor.fetchone()
-            
-            if not post_data:
-                conn.close()
-                return "Post not found", 404
-            
-            cursor.execute("UPDATE posts SET views = views + 1 WHERE id = %s", (post_data['id'],))
-            conn.commit()
-            
-            post_date = post_data['post_date']
-            game_name = post_data['games_included']
-            
-            cursor.execute("""
-                SELECT game_name, result, result_time 
-                FROM satta_results 
-                WHERE result_date = %s AND game_name = %s
-            """, (post_date, game_name))
-            today_result = cursor.fetchone()
-            
-            cursor.execute("""
-                SELECT result_date, result 
-                FROM satta_results 
-                WHERE game_name = %s AND result IS NOT NULL AND result != ''
-                ORDER BY result_date DESC LIMIT 7
-            """, (game_name,))
-            weekly_results = cursor.fetchall()
-            
-            cursor.execute("""
-                SELECT slug, title, post_date FROM posts 
-                WHERE games_included = %s AND slug != %s
-                ORDER BY post_date DESC LIMIT 5
-            """, (game_name, slug))
-            related_posts = cursor.fetchall()
-            
-            cursor.execute("""
-                SELECT slug, title, games_included FROM posts 
-                WHERE post_date = %s AND slug != %s
-                ORDER BY games_included
-            """, (post_date, slug))
-            other_games = cursor.fetchall()
-            
-            cursor.execute("""
-                SELECT result FROM satta_results 
-                WHERE game_name = %s AND result IS NOT NULL AND result != '' AND result != 'XX'
-                ORDER BY result_date DESC LIMIT 30
-            """, (game_name,))
-            monthly_results = [r['result'] for r in cursor.fetchall()]
-            
-            cursor.execute("SELECT COUNT(DISTINCT game_name) as cnt FROM satta_results WHERE result IS NOT NULL")
-            total_games = cursor.fetchone()['cnt']
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM posts WHERE slug = %s", (slug,))
+        post_data = cursor.fetchone()
         
+        if not post_data:
+            cursor.close()
+            conn.close()
+            return "Post not found", 404
+        
+        cursor.execute("UPDATE posts SET views = views + 1 WHERE id = %s", (post_data['id'],))
+        conn.commit()
+        
+        post_date = post_data['post_date']
+        game_name = post_data['games_included']
+        
+        cursor.execute("""
+            SELECT game_name, result, result_time 
+            FROM satta_results 
+            WHERE result_date = %s AND game_name = %s
+        """, (post_date, game_name))
+        today_result = cursor.fetchone()
+        
+        cursor.execute("""
+            SELECT result_date, result 
+            FROM satta_results 
+            WHERE game_name = %s AND result IS NOT NULL AND result != ''
+            ORDER BY result_date DESC LIMIT 7
+        """, (game_name,))
+        weekly_results = cursor.fetchall()
+        
+        cursor.execute("""
+            SELECT slug, title, post_date FROM posts 
+            WHERE games_included = %s AND slug != %s
+            ORDER BY post_date DESC LIMIT 5
+        """, (game_name, slug))
+        related_posts = cursor.fetchall()
+        
+        cursor.execute("""
+            SELECT slug, title, games_included FROM posts 
+            WHERE post_date = %s AND slug != %s
+            ORDER BY games_included
+        """, (post_date, slug))
+        other_games = cursor.fetchall()
+        
+        cursor.execute("""
+            SELECT result FROM satta_results 
+            WHERE game_name = %s AND result IS NOT NULL AND result != '' AND result != 'XX'
+            ORDER BY result_date DESC LIMIT 30
+        """, (game_name,))
+        monthly_results = [r['result'] for r in cursor.fetchall()]
+        
+        cursor.execute("SELECT COUNT(DISTINCT game_name) as cnt FROM satta_results WHERE result IS NOT NULL")
+        total_games = cursor.fetchone()['cnt']
+        
+        cursor.close()
         conn.close()
         
         odd_count = sum(1 for r in monthly_results if int(r) % 2 != 0)
