@@ -40,8 +40,8 @@
                     <td class="result-cell {% if game.yesterday not in ['--', 'XX'] %}has-result{% endif %}">
                         {{ '--' if game.yesterday in ['XX', '--'] else game.yesterday }}
                     </td>
-                    <td class="result-cell {% if game.today not in ['--', 'XX'] %}has-result today-result{% else %}waiting{% endif %}">
-                        {{ 'Waiting' if game.today == 'XX' else game.today }}
+                    <td class="result-cell {% if game.today not in ['--', 'XX', 'Waiting'] %}has-result today-result{% else %}waiting{% endif %}">
+                        {{ 'Waiting' if game.today in ['XX', '--', 'Waiting'] else game.today }}
                     </td>
                 </tr>
                 {% endfor %}

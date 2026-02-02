@@ -534,14 +534,13 @@ footer p {
 
 .result-cell.today-result {
     color: #FFD700;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
 
 .result-cell.waiting {
     color: #f59e0b;
-    font-size: 0.85rem;
-    font-weight: 500;
-    font-style: italic;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -560,7 +559,11 @@ footer p {
     }
     
     .result-cell.today-result {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+    }
+    
+    .result-cell.waiting {
+        font-size: 1.1rem;
     }
 }
 
