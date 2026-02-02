@@ -78,7 +78,7 @@ def display_ad(position):
     try:
         conn = get_db()
         cursor = get_cursor(conn)
-        cursor.execute("SELECT ad_code FROM ad_placements WHERE position = %s AND is_active = 1", (position,))
+        cursor.execute("SELECT ad_code FROM ad_placements WHERE position_name = %s AND is_active = 1", (position,))
         result = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -778,7 +778,7 @@ def admin_dashboard():
         cursor.execute("SELECT * FROM site_pages ORDER BY title")
         site_pages = cursor.fetchall()
         
-        cursor.execute("SELECT * FROM ad_placements ORDER BY position")
+        cursor.execute("SELECT * FROM ad_placements ORDER BY position_name")
         ad_placements = cursor.fetchall()
         
         cursor.close()
