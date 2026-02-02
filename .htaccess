@@ -1,7 +1,0 @@
-RewriteEngine On
-
-# Redirect post URLs
-RewriteRule ^post/([^/]+)/?$ post.php?slug=$1 [L,QSA]
-
-# Sitemap
-RewriteRule ^sitemap\.xml$ sitemap.php [L]
