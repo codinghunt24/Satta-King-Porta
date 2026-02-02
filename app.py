@@ -231,13 +231,21 @@ class SattaScraper:
         
         try:
             conn = get_db()
-            with conn.cursor() as cursor:
-                for row in data:
+            cursor = get_cursor(conn)
+            
+            for row in data:
+                if USE_MYSQL:
                     cursor.execute("""
                         INSERT IGNORE INTO games (name, time_slot) VALUES (%s, %s)
                     """, (row['game_name'], row['result_time']))
-                    
-                    if row['result_date'] == today:
+                else:
+                    cursor.execute("""
+                        INSERT INTO games (name, time_slot) VALUES (%s, %s)
+                        ON CONFLICT (name) DO NOTHING
+                    """, (row['game_name'], row['result_time']))
+                
+                if row['result_date'] == today:
+                    if USE_MYSQL:
                         cursor.execute("""
                             INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
                             VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
@@ -249,13 +257,31 @@ class SattaScraper:
                         """, (row['game_name'], row['result'], row['result_time'], row['result_date'], source_url))
                     else:
                         cursor.execute("""
+                            INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
+                            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                            ON CONFLICT (game_name, result_date) DO UPDATE SET
+                                result = EXCLUDED.result,
+                                result_time = EXCLUDED.result_time,
+                                source_url = EXCLUDED.source_url,
+                                scraped_at = CURRENT_TIMESTAMP
+                        """, (row['game_name'], row['result'], row['result_time'], row['result_date'], source_url))
+                else:
+                    if USE_MYSQL:
+                        cursor.execute("""
                             INSERT IGNORE INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
                             VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                         """, (row['game_name'], row['result'], row['result_time'], row['result_date'], source_url))
-                    
-                    updated += 1
+                    else:
+                        cursor.execute("""
+                            INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
+                            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                            ON CONFLICT (game_name, result_date) DO NOTHING
+                        """, (row['game_name'], row['result'], row['result_time'], row['result_date'], source_url))
                 
-                conn.commit()
+                updated += 1
+            
+            conn.commit()
+            cursor.close()
             conn.close()
         except Exception as e:
             print(f"Error saving data: {e}")
