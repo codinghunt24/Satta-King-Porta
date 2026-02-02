@@ -49,6 +49,7 @@
                 <li class="{% if page == 'news' %}active{% endif %}"><a href="/admin/dashboard?page=news">News</a></li>
                 <li class="{% if page == 'pages' %}active{% endif %}"><a href="/admin/dashboard?page=pages">Pages</a></li>
                 <li class="{% if page == 'ads' %}active{% endif %}"><a href="/admin/dashboard?page=ads">Ads</a></li>
+                <li class="{% if page == 'sitemap' %}active{% endif %}"><a href="/admin/dashboard?page=sitemap">Sitemap</a></li>
                 <li><a href="/admin/redirects">URL Redirects</a></li>
                 <li><a href="/admin/logout">Logout</a></li>
             </ul>
@@ -664,6 +665,101 @@
                         <td>{% if adsense_publisher_id %}<span style="color: #10b981;">{{ adsense_publisher_id }}</span>{% else %}<span style="color: #f59e0b;">Not Set</span>{% endif %}</td>
                     </tr>
                 </table>
+            </div>
+            
+            {% elif page == 'sitemap' %}
+            <h1 style="margin-bottom: 30px;">Sitemap Management</h1>
+            
+            <div class="card">
+                <h3 class="card-title">Site URL Configuration</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Set your production domain for sitemaps (without trailing slash)</p>
+                <form method="post" action="/admin/save-setting">
+                    <input type="hidden" name="key" value="site_url">
+                    <div class="form-inline">
+                        <input type="text" name="value" value="{{ site_url or 'https://sattaking.com.im' }}" placeholder="https://yourdomain.com" style="flex: 1;">
+                        <button type="submit" class="btn btn-primary">Save URL</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Sitemap Index Structure</h3>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Your sitemap is split into multiple files for better Google indexing (optimized for ~100 daily posts)</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sitemap File</th>
+                            <th>Content</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap.xml</code></td>
+                            <td>Main Index (links to all sitemaps)</td>
+                            <td><span style="color: #10b981;">✓ Active</span></td>
+                            <td><a href="/sitemap.xml" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                        </tr>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap-main.xml</code></td>
+                            <td>Homepage, Chart, Daily Updates, News</td>
+                            <td><span style="color: #10b981;">✓ Active</span></td>
+                            <td><a href="/sitemap-main.xml" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                        </tr>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap-games.xml</code></td>
+                            <td>All {{ total_games }} Game Chart Pages</td>
+                            <td><span style="color: #10b981;">✓ Active</span></td>
+                            <td><a href="/sitemap-games.xml" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                        </tr>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap-news.xml</code></td>
+                            <td>News Articles</td>
+                            <td><span style="color: #10b981;">✓ Active</span></td>
+                            <td><a href="/sitemap-news.xml" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                        </tr>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap-pages.xml</code></td>
+                            <td>Static Pages</td>
+                            <td><span style="color: #10b981;">✓ Active</span></td>
+                            <td><a href="/sitemap-pages.xml" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                        </tr>
+                        <tr>
+                            <td><code style="background: #374151; padding: 5px 10px; border-radius: 4px;">/sitemap-posts-YYYY-MM.xml</code></td>
+                            <td>Monthly Posts (auto-generated per month)</td>
+                            <td><span style="color: #10b981;">✓ Dynamic</span></td>
+                            <td><span style="color: #9ca3af;">Auto</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Google Search Console</h3>
+                <div style="background: #111827; padding: 20px; border-radius: 10px; border: 1px solid #374151;">
+                    <h4 style="color: #ffd700; margin-bottom: 15px;">Submit Your Sitemap</h4>
+                    <ol style="color: #9ca3af; line-height: 2;">
+                        <li>Go to <a href="https://search.google.com/search-console" target="_blank" style="color: #60a5fa;">Google Search Console</a></li>
+                        <li>Select your property</li>
+                        <li>Go to <strong>Sitemaps</strong> in the left menu</li>
+                        <li>Enter: <code style="background: #374151; padding: 3px 8px; border-radius: 4px;">sitemap.xml</code></li>
+                        <li>Click <strong>Submit</strong></li>
+                    </ol>
+                    <p style="color: #10b981; margin-top: 15px;"><strong>Tip:</strong> Google will automatically discover all linked sitemaps from the index!</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">robots.txt</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Your robots.txt automatically includes sitemap reference</p>
+                <div style="background: #111827; padding: 15px; border-radius: 8px; font-family: monospace; color: #10b981;">
+                    User-agent: *<br>
+                    Allow: /<br>
+                    Sitemap: {{ site_url or 'https://sattaking.com.im' }}/sitemap.xml
+                </div>
+                <p style="color: #9ca3af; margin-top: 10px;"><a href="/robots.txt" target="_blank" style="color: #60a5fa;">View robots.txt →</a></p>
             </div>
             
             {% else %}

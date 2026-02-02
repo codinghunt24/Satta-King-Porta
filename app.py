@@ -1085,6 +1085,25 @@ def sitemap_pages():
         print(f"Sitemap pages error: {e}")
         return "Error", 500
 
+@app.route('/robots.txt')
+def robots_txt():
+    """Dynamic robots.txt with sitemap reference"""
+    base_url = get_setting('site_url') or 'https://sattaking.com.im'
+    content = f"""User-agent: *
+Allow: /
+
+Sitemap: {base_url}/sitemap.xml
+"""
+    return Response(content, mimetype='text/plain')
+
+@app.route('/ads.txt')
+def ads_txt():
+    """ads.txt for AdSense verification"""
+    content = get_setting('ads_txt_content')
+    if content:
+        return Response(content, mimetype='text/plain')
+    return Response("# No ads.txt content configured", mimetype='text/plain')
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -1177,7 +1196,8 @@ def admin_dashboard():
             daily_post_enabled=get_setting('daily_post_enabled', '1'),
             daily_post_hour=get_setting('daily_post_hour', '1'),
             daily_post_minute=get_setting('daily_post_minute', '0'),
-            last_daily_posts_created=get_setting('last_daily_posts_created', '')
+            last_daily_posts_created=get_setting('last_daily_posts_created', ''),
+            site_url=get_setting('site_url', 'https://sattaking.com.im')
         )
     except Exception as e:
         print(f"Admin error: {e}")
