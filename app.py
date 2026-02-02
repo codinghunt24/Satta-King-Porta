@@ -159,7 +159,9 @@ class SattaScraper:
         
         game_rows = re.findall(r'<tr[^>]*class=["\'][^"\']*game-result[^"\']*["\'][^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
         
+        display_order = 0
         for row in game_rows:
+            display_order += 1
             game_name_match = re.search(r'<h3[^>]*class=["\']game-name["\'][^>]*>([^<]+)</h3>', row, re.IGNORECASE)
             time_match = re.search(r'<h3[^>]*class=["\']game-time["\'][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)</h3>', row, re.IGNORECASE)
             yesterday_match = re.search(r'<td[^>]*class=["\']yesterday-number["\'][^>]*>.*?<h3>([^<]+)</h3>', row, re.DOTALL | re.IGNORECASE)
@@ -189,7 +191,8 @@ class SattaScraper:
                     'game_name': normalized_name,
                     'result': yesterday_result,
                     'result_time': time_24,
-                    'result_date': yesterday
+                    'result_date': yesterday,
+                    'display_order': display_order
                 })
             
             if re.match(r'^\d{2}$', today_result):
@@ -197,7 +200,8 @@ class SattaScraper:
                     'game_name': normalized_name,
                     'result': today_result,
                     'result_time': time_24,
-                    'result_date': today
+                    'result_date': today,
+                    'display_order': display_order
                 })
         
         print(f"Parsed {len(data)} game results from satta-king-fast.com")
@@ -242,15 +246,17 @@ class SattaScraper:
             cursor = get_cursor(conn)
             
             for row in data:
+                display_order = row.get('display_order', 999)
                 if USE_MYSQL:
                     cursor.execute("""
-                        INSERT IGNORE INTO games (name, time_slot) VALUES (%s, %s)
-                    """, (row['game_name'], row['result_time']))
+                        INSERT INTO games (name, time_slot, display_order) VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE time_slot = VALUES(time_slot), display_order = VALUES(display_order)
+                    """, (row['game_name'], row['result_time'], display_order))
                 else:
                     cursor.execute("""
-                        INSERT INTO games (name, time_slot) VALUES (%s, %s)
-                        ON CONFLICT (name) DO NOTHING
-                    """, (row['game_name'], row['result_time']))
+                        INSERT INTO games (name, time_slot, display_order) VALUES (%s, %s, %s)
+                        ON CONFLICT (name) DO UPDATE SET time_slot = EXCLUDED.time_slot, display_order = EXCLUDED.display_order
+                    """, (row['game_name'], row['result_time'], display_order))
                 
                 if row['result_date'] == today:
                     if USE_MYSQL:
@@ -367,20 +373,20 @@ def index():
         if USE_MYSQL:
             cursor.execute("""
                 SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%%Y-%%m-%%d') as result_date, 
-                       sr.result_time, g.time_slot
+                       sr.result_time, g.time_slot, g.display_order
                 FROM satta_results sr 
                 LEFT JOIN games g ON g.name = sr.game_name
                 WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
-                ORDER BY g.time_slot ASC, sr.game_name ASC
+                ORDER BY COALESCE(g.display_order, 999) ASC, sr.game_name ASC
             """)
         else:
             cursor.execute("""
                 SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, 
-                       sr.result_time, g.time_slot
+                       sr.result_time, g.time_slot, g.display_order
                 FROM satta_results sr 
                 LEFT JOIN games g ON g.name = sr.game_name
                 WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
-                ORDER BY g.time_slot ASC, sr.game_name ASC
+                ORDER BY COALESCE(g.display_order, 999) ASC, sr.game_name ASC
             """)
         all_results = cursor.fetchall()
         
