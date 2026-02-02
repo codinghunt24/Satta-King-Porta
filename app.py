@@ -525,17 +525,50 @@ def post(slug):
         even_count = len(monthly_results) - odd_count
         
         digit_freq = {}
+        first_digit_freq = {}
+        sum_total = 0
         for r in monthly_results:
-            last_digit = int(r) % 10
+            num = int(r)
+            sum_total += num
+            last_digit = num % 10
+            first_digit = num // 10 if num >= 10 else num
             digit_freq[last_digit] = digit_freq.get(last_digit, 0) + 1
+            first_digit_freq[first_digit] = first_digit_freq.get(first_digit, 0) + 1
+        
         hot_digits = sorted(digit_freq.keys(), key=lambda x: digit_freq[x], reverse=True)[:3]
+        cold_digits = sorted(digit_freq.keys(), key=lambda x: digit_freq[x])[:3]
+        hot_first_digits = sorted(first_digit_freq.keys(), key=lambda x: first_digit_freq[x], reverse=True)[:3]
+        avg_result = round(sum_total / len(monthly_results), 1) if monthly_results else 0
+        
+        high_count = sum(1 for r in monthly_results if int(r) >= 50)
+        low_count = len(monthly_results) - high_count
+        
+        ranges = {'00-24': 0, '25-49': 0, '50-74': 0, '75-99': 0}
+        for r in monthly_results:
+            num = int(r)
+            if num < 25: ranges['00-24'] += 1
+            elif num < 50: ranges['25-49'] += 1
+            elif num < 75: ranges['50-74'] += 1
+            else: ranges['75-99'] += 1
+        
+        consecutive_same = 0
+        max_consecutive = 0
+        for i in range(1, len(monthly_results)):
+            if monthly_results[i] == monthly_results[i-1]:
+                consecutive_same += 1
+                max_consecutive = max(max_consecutive, consecutive_same)
+            else:
+                consecutive_same = 0
         
         formatted_date = datetime.strptime(str(post_date), '%Y-%m-%d').strftime('%d %B %Y')
         day_name = datetime.strptime(str(post_date), '%Y-%m-%d').strftime('%A')
         month_name = datetime.strptime(str(post_date), '%Y-%m-%d').strftime('%B')
         year = datetime.strptime(str(post_date), '%Y-%m-%d').strftime('%Y')
+        iso_date = datetime.strptime(str(post_date), '%Y-%m-%d').strftime('%Y-%m-%d')
         
         has_valid_result = today_result and today_result['result'] and today_result['result'] not in ['XX', 'Waiting', '--']
+        
+        current_time_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%H:%M IST')
         
         return render_template('post.html',
             post=post_data,
@@ -548,11 +581,20 @@ def post(slug):
             total_games=total_games,
             odd_count=odd_count,
             even_count=even_count,
+            high_count=high_count,
+            low_count=low_count,
             hot_digits=hot_digits,
+            cold_digits=cold_digits,
+            hot_first_digits=hot_first_digits,
+            avg_result=avg_result,
+            ranges=ranges,
+            max_consecutive=max_consecutive,
             formatted_date=formatted_date,
             day_name=day_name,
             month_name=month_name,
             year=year,
+            iso_date=iso_date,
+            current_time_ist=current_time_ist,
             game_name=game_name,
             adsense_auto_ads=get_setting('adsense_auto_ads')
         )
