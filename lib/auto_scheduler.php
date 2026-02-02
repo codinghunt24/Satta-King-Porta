@@ -113,7 +113,7 @@ function runAutoScrape($pdo) {
         try {
             $result = $scraper->scrape($source['url']);
             if ($result['success']) {
-                $pdo->prepare("UPDATE scrape_sources SET last_scraped_at = CURRENT_TIMESTAMP WHERE id = ?")->execute([$source['id']]);
+                $pdo->prepare("UPDATE scrape_sources SET last_scraped = CURRENT_TIMESTAMP WHERE id = ?")->execute([$source['id']]);
             }
         } catch (Exception $e) {
             continue;
