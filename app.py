@@ -364,6 +364,81 @@ def trigger_auto_scrape_if_needed():
     if should_run_auto_scrape():
         run_auto_scrape()
 
+def create_daily_posts_for_all_games():
+    """Create posts for ALL games with Waiting result at scheduled time"""
+    try:
+        today = datetime.now(IST).date()
+        today_str = today.strftime('%Y-%m-%d')
+        formatted_date = today.strftime('%-d %b %Y')
+        
+        conn = get_db()
+        cursor = get_cursor(conn)
+        
+        cursor.execute("SELECT DISTINCT game_name FROM games WHERE is_active = 1 ORDER BY game_name")
+        games = cursor.fetchall()
+        
+        posts_created = 0
+        for game in games:
+            game_name = game['game_name']
+            slug = f"{game_name.lower().replace(' ', '-').replace('/', '-')}-satta-king-result-{today.strftime('%-d').lower()}-{today.strftime('%B').lower()}-{today.strftime('%Y')}"
+            slug = re.sub(r'[^a-z0-9-]', '', slug)
+            slug = re.sub(r'-+', '-', slug)
+            
+            title = f"{game_name} Satta King Result {formatted_date}"
+            meta_desc = f"Check {game_name} Satta King Result for {formatted_date}. Get live {game_name} result, chart, and fast updates."
+            meta_keywords = f"{game_name}, satta king, result, {formatted_date}, chart, live result"
+            
+            cursor.execute("SELECT id FROM posts WHERE slug = %s", (slug,))
+            existing = cursor.fetchone()
+            
+            if not existing:
+                if USE_MYSQL:
+                    cursor.execute("""
+                        INSERT INTO posts (title, slug, post_date, meta_description, meta_keywords, games_included, views)
+                        VALUES (%s, %s, %s, %s, %s, %s, 0)
+                    """, (title, slug, today_str, meta_desc, meta_keywords, game_name))
+                else:
+                    cursor.execute("""
+                        INSERT INTO posts (title, slug, post_date, meta_description, meta_keywords, games_included, views)
+                        VALUES (%s, %s, %s, %s, %s, %s, 0)
+                    """, (title, slug, today_str, meta_desc, meta_keywords, game_name))
+                posts_created += 1
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        set_setting('last_daily_posts_created', today_str)
+        print(f"Created {posts_created} daily posts for {today_str}")
+        return posts_created
+    except Exception as e:
+        print(f"Error creating daily posts: {e}")
+        return 0
+
+def run_daily_post_scheduler():
+    """Check if it's time to create daily posts based on scheduled time"""
+    try:
+        enabled = get_setting('daily_post_enabled', '1')
+        if enabled != '1':
+            return
+        
+        scheduled_hour = int(get_setting('daily_post_hour', '1'))
+        scheduled_minute = int(get_setting('daily_post_minute', '0'))
+        
+        now = datetime.now(IST)
+        today_str = now.strftime('%Y-%m-%d')
+        
+        last_created = get_setting('last_daily_posts_created', '')
+        
+        if last_created == today_str:
+            return
+        
+        if now.hour == scheduled_hour and now.minute >= scheduled_minute:
+            print(f"Running daily post creation at {now.strftime('%H:%M')} IST")
+            create_daily_posts_for_all_games()
+    except Exception as e:
+        print(f"Daily post scheduler error: {e}")
+
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -965,7 +1040,11 @@ def admin_dashboard():
             auto_publish_enabled=get_setting('auto_publish_enabled', '1'),
             auto_publish_hour=get_setting('auto_publish_hour', '1'),
             india_time=datetime.now(IST).strftime('%d %b %Y, %I:%M:%S %p IST'),
-            scrape_interval=get_setting('scrape_interval_minutes', '30')
+            scrape_interval=get_setting('scrape_interval_minutes', '30'),
+            daily_post_enabled=get_setting('daily_post_enabled', '1'),
+            daily_post_hour=get_setting('daily_post_hour', '1'),
+            daily_post_minute=get_setting('daily_post_minute', '0'),
+            last_daily_posts_created=get_setting('last_daily_posts_created', '')
         )
     except Exception as e:
         print(f"Admin error: {e}")
@@ -976,6 +1055,23 @@ def admin_dashboard():
 def admin_scrape_now():
     run_auto_scrape()
     return redirect(url_for('admin_dashboard', page='auto-scrape'))
+
+@app.route('/admin/save-daily-post-settings', methods=['POST'])
+@login_required
+def admin_save_daily_post_settings():
+    enabled = request.form.get('daily_post_enabled', '1')
+    hour = request.form.get('daily_post_hour', '1')
+    minute = request.form.get('daily_post_minute', '0')
+    set_setting('daily_post_enabled', enabled)
+    set_setting('daily_post_hour', hour)
+    set_setting('daily_post_minute', minute)
+    return redirect(url_for('admin_dashboard', page='daily-posts'))
+
+@app.route('/admin/create-daily-posts-now', methods=['POST'])
+@login_required
+def admin_create_daily_posts_now():
+    count = create_daily_posts_for_all_games()
+    return redirect(url_for('admin_dashboard', page='daily-posts'))
 
 @app.route('/admin/add-source', methods=['POST'])
 @login_required
@@ -1289,11 +1385,23 @@ scheduler = BackgroundScheduler(timezone=IST)
 
 def schedule_auto_scrape():
     interval = get_scrape_interval()
-    scheduler.remove_all_jobs()
+    for job in scheduler.get_jobs():
+        if job.id == 'auto_scrape':
+            scheduler.remove_job('auto_scrape')
+            break
     scheduler.add_job(func=run_auto_scrape, trigger="interval", minutes=interval, id='auto_scrape')
     print(f"Auto-scrape scheduled every {interval} minutes")
 
+def schedule_daily_posts():
+    for job in scheduler.get_jobs():
+        if job.id == 'daily_posts':
+            scheduler.remove_job('daily_posts')
+            break
+    scheduler.add_job(func=run_daily_post_scheduler, trigger="interval", minutes=1, id='daily_posts')
+    print("Daily post scheduler running (checks every minute)")
+
 schedule_auto_scrape()
+schedule_daily_posts()
 scheduler.start()
 
 if __name__ == '__main__':
