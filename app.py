@@ -676,7 +676,8 @@ def index():
         in_content_2_ad=display_ad('in_content_2'),
         before_footer_ad=display_ad('before_footer'),
         push_prompt_title=get_setting('push_prompt_title'),
-        push_prompt_message=get_setting('push_prompt_message')
+        push_prompt_message=get_setting('push_prompt_message'),
+        site_url=get_setting('site_url', 'https://sattaking.com.im')
     )
 
 @app.route('/post/<slug>')

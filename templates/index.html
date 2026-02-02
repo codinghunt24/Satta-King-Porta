@@ -1,5 +1,83 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "WebSite",
+            "@id": "{{ site_url or 'https://sattaking.com.im' }}/#website",
+            "url": "{{ site_url or 'https://sattaking.com.im' }}",
+            "name": "Satta King",
+            "description": "Satta King Fast Live Results - Delhi Satta King, Satta King 786, Gali Disawar Results",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "{{ site_url or 'https://sattaking.com.im' }}/chart?game={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        },
+        {
+            "@type": "Organization",
+            "@id": "{{ site_url or 'https://sattaking.com.im' }}/#organization",
+            "name": "Satta King",
+            "url": "{{ site_url or 'https://sattaking.com.im' }}",
+            "logo": "{{ site_url or 'https://sattaking.com.im' }}/logo.png",
+            "sameAs": []
+        },
+        {
+            "@type": "WebPage",
+            "@id": "{{ site_url or 'https://sattaking.com.im' }}/#webpage",
+            "url": "{{ site_url or 'https://sattaking.com.im' }}",
+            "name": "Satta King | Satta King 786 | Delhi Satta King Live Results 2026",
+            "isPartOf": {"@id": "{{ site_url or 'https://sattaking.com.im' }}/#website"},
+            "about": {"@id": "{{ site_url or 'https://sattaking.com.im' }}/#organization"},
+            "datePublished": "2026-01-01",
+            "dateModified": "{{ today }}",
+            "description": "Satta King Fast Live Results 2026 - Check Satta King Disawar, Gali, Delhi Bazar Satta King, Shri Ganesh results daily."
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is Satta King?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Satta King is a popular game where players can check daily results. Our website provides fast Satta King results including Delhi Satta King, Satta King Disawar, Gali, Faridabad, and Ghaziabad results."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How to check Satta King Chart?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "You can check Satta King Chart on our website. Click on Record Chart link next to any game name to view the monthly Satta King chart with historical results."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is Delhi Bazar Satta King?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Delhi Bazar Satta King is one of the popular games. We provide live results for Delhi Bazar, Shri Ganesh Satta King, Black Satta King, and Satta King 786 updated daily."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "When are Satta King results updated?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Satta King Fast results are updated throughout the day as games conclude. Each game has a specific time slot - check the time shown next to each game name for exact result timing."
+                    }
+                }
+            ]
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <section class="hero">
     <h2>Satta King Fast Live Results</h2>
