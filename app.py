@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
 from dotenv import load_dotenv
@@ -7,6 +8,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import cloudscraper
 from functools import wraps
 import pytz
+from pywebpush import webpush, WebPushException
+from py_vapid import Vapid
 
 IST = pytz.timezone('Asia/Kolkata')
 
@@ -76,6 +79,94 @@ def set_setting(key, value):
         conn.close()
     except Exception as e:
         print(f"Error setting {key}: {e}")
+
+def get_vapid_keys():
+    """Get or generate VAPID keys for push notifications"""
+    private_key = get_setting('vapid_private_key')
+    public_key = get_setting('vapid_public_key')
+    
+    if not private_key or not public_key:
+        vapid = Vapid()
+        vapid.generate_keys()
+        private_key = vapid.private_pem().decode('utf-8')
+        public_key = vapid.public_key_urlsafe_base64()
+        set_setting('vapid_private_key', private_key)
+        set_setting('vapid_public_key', public_key)
+    
+    return private_key, public_key
+
+def send_push_notification(title, body, url='/', icon='/logo.png', notification_type='manual'):
+    """Send push notification to all active subscribers"""
+    private_key, public_key = get_vapid_keys()
+    
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT id, endpoint, p256dh, auth FROM push_subscribers WHERE is_active = TRUE")
+        subscribers = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        if not subscribers:
+            return {'success': 0, 'fail': 0, 'total': 0}
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        payload = json.dumps({
+            'title': title,
+            'body': body,
+            'url': url if url.startswith('http') else base_url + url,
+            'icon': icon if icon.startswith('http') else base_url + icon
+        })
+        
+        success_count = 0
+        fail_count = 0
+        failed_endpoints = []
+        
+        for sub in subscribers:
+            try:
+                webpush(
+                    subscription_info={
+                        'endpoint': sub['endpoint'],
+                        'keys': {
+                            'p256dh': sub['p256dh'],
+                            'auth': sub['auth']
+                        }
+                    },
+                    data=payload,
+                    vapid_private_key=private_key,
+                    vapid_claims={'sub': 'mailto:admin@sattaking.com.im'}
+                )
+                success_count += 1
+            except WebPushException as e:
+                fail_count += 1
+                if e.response and e.response.status_code in [404, 410]:
+                    failed_endpoints.append(sub['id'])
+            except Exception as e:
+                fail_count += 1
+        
+        if failed_endpoints:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            for sub_id in failed_endpoints:
+                cursor.execute("UPDATE push_subscribers SET is_active = FALSE WHERE id = %s", (sub_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("""
+            INSERT INTO notification_logs (title, body, url, total_sent, success_count, fail_count, notification_type)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (title, body, url, len(subscribers), success_count, fail_count, notification_type))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {'success': success_count, 'fail': fail_count, 'total': len(subscribers)}
+    except Exception as e:
+        print(f"Push notification error: {e}")
+        return {'success': 0, 'fail': 0, 'total': 0, 'error': str(e)}
 
 def check_redirect(path):
     try:
@@ -255,12 +346,12 @@ class SattaScraper:
     def save_data(self, data, source_url):
         updated = 0
         today = datetime.now().strftime('%Y-%m-%d')
+        new_results = []
         
         try:
             conn = get_db()
             cursor = get_cursor(conn)
             
-            # Clear all existing games and insert fresh ones from source
             cursor.execute("DELETE FROM games")
             
             for row in data:
@@ -276,7 +367,15 @@ class SattaScraper:
                         ON CONFLICT (name) DO UPDATE SET time_slot = EXCLUDED.time_slot, display_order = EXCLUDED.display_order
                     """, (row['game_name'], row['result_time'], display_order))
                 
-                if row['result_date'] == today:
+                if row['result_date'] == today and row['result'] and row['result'] not in ['XX', '--', 'Waiting']:
+                    cursor.execute("SELECT result FROM satta_results WHERE game_name = %s AND result_date = %s", 
+                                   (row['game_name'], row['result_date']))
+                    existing = cursor.fetchone()
+                    old_result = existing['result'] if existing else None
+                    
+                    if old_result != row['result'] and old_result in [None, 'XX', '--', 'Waiting']:
+                        new_results.append({'game': row['game_name'], 'result': row['result']})
+                    
                     if USE_MYSQL:
                         cursor.execute("""
                             INSERT INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
@@ -297,7 +396,7 @@ class SattaScraper:
                                 source_url = EXCLUDED.source_url,
                                 scraped_at = CURRENT_TIMESTAMP
                         """, (row['game_name'], row['result'], row['result_time'], row['result_date'], source_url))
-                else:
+                elif row['result_date'] != today:
                     if USE_MYSQL:
                         cursor.execute("""
                             INSERT IGNORE INTO satta_results (game_name, result, result_time, result_date, source_url, scraped_at)
@@ -315,6 +414,15 @@ class SattaScraper:
             conn.commit()
             cursor.close()
             conn.close()
+            
+            if new_results and get_setting('push_on_result', '1') == '1':
+                for nr in new_results[:5]:
+                    send_push_notification(
+                        title=f"🎯 {nr['game']} Result: {nr['result']}",
+                        body=f"Today's {nr['game']} result is {nr['result']}. Check all results now!",
+                        url='/',
+                        notification_type='result'
+                    )
         except Exception as e:
             print(f"Error saving data: {e}")
         
@@ -1104,6 +1212,113 @@ def ads_txt():
         return Response(content, mimetype='text/plain')
     return Response("# No ads.txt content configured", mimetype='text/plain')
 
+@app.route('/sw.js')
+def service_worker():
+    """Service worker for push notifications"""
+    sw_code = '''
+self.addEventListener('push', function(event) {
+    const data = event.data ? event.data.json() : {};
+    const title = data.title || 'Satta King';
+    const options = {
+        body: data.body || 'New update available!',
+        icon: data.icon || '/logo.png',
+        badge: '/logo.png',
+        vibrate: [100, 50, 100],
+        data: { url: data.url || '/' },
+        actions: [{ action: 'open', title: 'View Now' }]
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    const url = event.notification.data.url || '/';
+    event.waitUntil(clients.openWindow(url));
+});
+'''
+    return Response(sw_code, mimetype='application/javascript')
+
+@app.route('/api/push/vapid-key')
+def get_vapid_public_key():
+    """Get VAPID public key for push subscription"""
+    _, public_key = get_vapid_keys()
+    return jsonify({'publicKey': public_key})
+
+@app.route('/api/push/subscribe', methods=['POST'])
+def push_subscribe():
+    """Subscribe to push notifications"""
+    try:
+        data = request.get_json()
+        endpoint = data.get('endpoint')
+        keys = data.get('keys', {})
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+        
+        if not endpoint or not p256dh or not auth:
+            return jsonify({'error': 'Invalid subscription data'}), 400
+        
+        user_agent = request.headers.get('User-Agent', '')
+        
+        conn = get_db()
+        cursor = get_cursor(conn)
+        
+        if USE_MYSQL:
+            cursor.execute("""
+                INSERT INTO push_subscribers (endpoint, p256dh, auth, user_agent)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE p256dh = VALUES(p256dh), auth = VALUES(auth), is_active = TRUE
+            """, (endpoint, p256dh, auth, user_agent))
+        else:
+            cursor.execute("""
+                INSERT INTO push_subscribers (endpoint, p256dh, auth, user_agent)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (endpoint) DO UPDATE SET p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth, is_active = TRUE
+            """, (endpoint, p256dh, auth, user_agent))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Subscribed successfully'})
+    except Exception as e:
+        print(f"Subscribe error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/push/unsubscribe', methods=['POST'])
+def push_unsubscribe():
+    """Unsubscribe from push notifications"""
+    try:
+        data = request.get_json()
+        endpoint = data.get('endpoint')
+        
+        if endpoint:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            cursor.execute("UPDATE push_subscribers SET is_active = FALSE WHERE endpoint = %s", (endpoint,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/push/stats')
+def push_stats():
+    """Get push notification stats"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT COUNT(*) as count FROM push_subscribers WHERE is_active = TRUE")
+        active = cursor.fetchone()['count']
+        cursor.execute("SELECT COUNT(*) as count FROM push_subscribers")
+        total = cursor.fetchone()['count']
+        cursor.close()
+        conn.close()
+        return jsonify({'active': active, 'total': total})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -1197,11 +1412,75 @@ def admin_dashboard():
             daily_post_hour=get_setting('daily_post_hour', '1'),
             daily_post_minute=get_setting('daily_post_minute', '0'),
             last_daily_posts_created=get_setting('last_daily_posts_created', ''),
-            site_url=get_setting('site_url', 'https://sattaking.com.im')
+            site_url=get_setting('site_url', 'https://sattaking.com.im'),
+            push_active_subscribers=get_push_stats()['active'],
+            push_total_subscribers=get_push_stats()['total'],
+            push_total_sent=get_push_stats()['sent'],
+            push_prompt_title=get_setting('push_prompt_title'),
+            push_prompt_message=get_setting('push_prompt_message'),
+            push_on_result=get_setting('push_on_result', '1'),
+            push_on_post=get_setting('push_on_post', '1'),
+            notification_logs=get_notification_logs()
         )
     except Exception as e:
         print(f"Admin error: {e}")
         return f"Error: {e}", 500
+
+def get_push_stats():
+    """Get push notification statistics"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT COUNT(*) as count FROM push_subscribers WHERE is_active = TRUE")
+        active = cursor.fetchone()['count']
+        cursor.execute("SELECT COUNT(*) as count FROM push_subscribers")
+        total = cursor.fetchone()['count']
+        cursor.execute("SELECT COALESCE(SUM(total_sent), 0) as sent FROM notification_logs")
+        sent = cursor.fetchone()['sent']
+        cursor.close()
+        conn.close()
+        return {'active': active, 'total': total, 'sent': int(sent)}
+    except:
+        return {'active': 0, 'total': 0, 'sent': 0}
+
+def get_notification_logs():
+    """Get recent notification logs"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM notification_logs ORDER BY sent_at DESC LIMIT 20")
+        logs = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return logs
+    except:
+        return []
+
+@app.route('/admin/save-push-settings', methods=['POST'])
+@login_required
+def admin_save_push_settings():
+    set_setting('push_prompt_title', request.form.get('push_prompt_title', ''))
+    set_setting('push_prompt_message', request.form.get('push_prompt_message', ''))
+    return redirect(url_for('admin_dashboard', page='push'))
+
+@app.route('/admin/save-push-auto', methods=['POST'])
+@login_required
+def admin_save_push_auto():
+    set_setting('push_on_result', '1' if request.form.get('push_on_result') else '0')
+    set_setting('push_on_post', '1' if request.form.get('push_on_post') else '0')
+    return redirect(url_for('admin_dashboard', page='push'))
+
+@app.route('/admin/send-push', methods=['POST'])
+@login_required
+def admin_send_push():
+    title = request.form.get('title', '')
+    body = request.form.get('body', '')
+    url = request.form.get('url', '/')
+    
+    if title and body:
+        send_push_notification(title, body, url, notification_type='manual')
+    
+    return redirect(url_for('admin_dashboard', page='push'))
 
 @app.route('/admin/scrape-now', methods=['POST'])
 @login_required

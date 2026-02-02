@@ -50,6 +50,7 @@
                 <li class="{% if page == 'pages' %}active{% endif %}"><a href="/admin/dashboard?page=pages">Pages</a></li>
                 <li class="{% if page == 'ads' %}active{% endif %}"><a href="/admin/dashboard?page=ads">Ads</a></li>
                 <li class="{% if page == 'sitemap' %}active{% endif %}"><a href="/admin/dashboard?page=sitemap">Sitemap</a></li>
+                <li class="{% if page == 'push' %}active{% endif %}"><a href="/admin/dashboard?page=push">Push Notifications</a></li>
                 <li><a href="/admin/redirects">URL Redirects</a></li>
                 <li><a href="/admin/logout">Logout</a></li>
             </ul>
@@ -760,6 +761,107 @@
                     Sitemap: {{ site_url or 'https://sattaking.com.im' }}/sitemap.xml
                 </div>
                 <p style="color: #9ca3af; margin-top: 10px;"><a href="/robots.txt" target="_blank" style="color: #60a5fa;">View robots.txt →</a></p>
+            </div>
+            
+            {% elif page == 'push' %}
+            <h1 style="margin-bottom: 30px;">Push Notifications</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="active-subs">{{ push_active_subscribers or 0 }}</h3>
+                    <p>Active Subscribers</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-subs">{{ push_total_subscribers or 0 }}</h3>
+                    <p>Total Subscribers</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ push_total_sent or 0 }}</h3>
+                    <p>Notifications Sent</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Subscription Prompt Settings</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Customize the notification prompt that appears to new visitors</p>
+                <form method="post" action="/admin/save-push-settings">
+                    <div class="form-group">
+                        <label>Prompt Title</label>
+                        <input type="text" name="push_prompt_title" value="{{ push_prompt_title or 'Get Satta King Results Instantly!' }}" placeholder="Get Satta King Results Instantly!">
+                    </div>
+                    <div class="form-group">
+                        <label>Prompt Message</label>
+                        <textarea name="push_prompt_message" rows="2" placeholder="Enable notifications to receive live game results directly on your device.">{{ push_prompt_message or 'Enable notifications to receive live game results directly on your device.' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Auto Notifications</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Configure automatic notifications for results and posts</p>
+                <form method="post" action="/admin/save-push-auto">
+                    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" name="push_on_result" value="1" {% if push_on_result == '1' %}checked{% endif %} style="width: 20px; height: 20px;">
+                            <span style="color: #fff;">Send notification when game results update</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" name="push_on_post" value="1" {% if push_on_post == '1' %}checked{% endif %} style="width: 20px; height: 20px;">
+                            <span style="color: #fff;">Send notification for new daily posts</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Save Auto Settings</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Send Manual Notification</h3>
+                <form method="post" action="/admin/send-push">
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" name="title" required placeholder="e.g., Gali Result: 45">
+                    </div>
+                    <div class="form-group">
+                        <label>Message *</label>
+                        <textarea name="body" rows="2" required placeholder="e.g., Today's Gali result is 45. Check all results now!"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Link URL (optional)</label>
+                        <input type="text" name="url" placeholder="/" value="/">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Notification to All Subscribers</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Recent Notifications</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Sent</th>
+                            <th>Success</th>
+                            <th>Failed</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in notification_logs %}
+                        <tr>
+                            <td>{{ log.title }}</td>
+                            <td><span style="background: {% if log.notification_type == 'manual' %}#e94560{% elif log.notification_type == 'result' %}#10b981{% else %}#f59e0b{% endif %}; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">{{ log.notification_type }}</span></td>
+                            <td>{{ log.total_sent }}</td>
+                            <td style="color: #10b981;">{{ log.success_count }}</td>
+                            <td style="color: #e94560;">{{ log.fail_count }}</td>
+                            <td style="color: #9ca3af;">{{ log.sent_at.strftime('%d %b, %I:%M %p') if log.sent_at else '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" style="color: #9ca3af; text-align: center;">No notifications sent yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
             
             {% else %}
