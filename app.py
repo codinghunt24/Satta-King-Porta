@@ -334,7 +334,7 @@ def run_auto_scrape():
             except Exception as e:
                 print(f"Error scraping {source['url']}: {e}")
         
-        set_setting('last_auto_scrape', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        set_setting('last_auto_scrape', datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S'))
     except Exception as e:
         print(f"Auto scrape error: {e}")
 
@@ -368,7 +368,7 @@ def index():
     
     last_update = get_setting('last_auto_scrape')
     try:
-        last_update_formatted = datetime.strptime(last_update, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p') if last_update else 'Not yet'
+        last_update_formatted = datetime.strptime(last_update, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p IST') if last_update else 'Not yet'
     except:
         last_update_formatted = 'Not yet'
     
