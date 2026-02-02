@@ -509,12 +509,12 @@ def create_daily_posts_for_all_games():
         conn = get_db()
         cursor = get_cursor(conn)
         
-        cursor.execute("SELECT DISTINCT game_name FROM games WHERE is_active = 1 ORDER BY game_name")
+        cursor.execute("SELECT DISTINCT name FROM games WHERE is_active = 1 ORDER BY name")
         games = cursor.fetchall()
         
         posts_created = 0
         for game in games:
-            game_name = game['game_name']
+            game_name = game['name']
             slug = f"{game_name.lower().replace(' ', '-').replace('/', '-')}-satta-king-result-{today.strftime('%-d').lower()}-{today.strftime('%B').lower()}-{today.strftime('%Y')}"
             slug = re.sub(r'[^a-z0-9-]', '', slug)
             slug = re.sub(r'-+', '-', slug)
