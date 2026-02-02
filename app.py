@@ -747,7 +747,7 @@ def news():
         with conn.cursor() as cursor:
             cursor.execute("""
                 SELECT slug, title, meta_description, created_at, views 
-                FROM news_posts WHERE is_published = 1 
+                FROM news_posts WHERE status = 'published' 
                 ORDER BY created_at DESC
             """)
             news_list = cursor.fetchall()
@@ -766,7 +766,7 @@ def news_post(slug):
     try:
         conn = get_db()
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM news_posts WHERE slug = %s AND is_published = 1", (slug,))
+            cursor.execute("SELECT * FROM news_posts WHERE slug = %s AND status = 'published'", (slug,))
             news_data = cursor.fetchone()
             
             if not news_data:
@@ -813,7 +813,7 @@ def sitemap():
             cursor.execute("SELECT slug, post_date FROM posts ORDER BY post_date DESC")
             posts = cursor.fetchall()
             
-            cursor.execute("SELECT slug FROM news_posts WHERE is_published = 1")
+            cursor.execute("SELECT slug FROM news_posts WHERE status = 'published'")
             news = cursor.fetchall()
             
             cursor.execute("SELECT slug FROM site_pages")
