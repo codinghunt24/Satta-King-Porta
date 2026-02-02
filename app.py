@@ -77,6 +77,18 @@ def set_setting(key, value):
     except Exception as e:
         print(f"Error setting {key}: {e}")
 
+def check_redirect(path):
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT new_url, redirect_type FROM url_redirects WHERE old_url = %s AND is_active = TRUE", (path,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return result
+    except:
+        return None
+
 def display_ad(position):
     try:
         conn = get_db()
@@ -358,6 +370,16 @@ def add_header(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+@app.before_request
+def handle_redirects():
+    path = request.path
+    if path.startswith('/static') or path.startswith('/admin') or path.startswith('/api'):
+        return None
+    redir = check_redirect(path)
+    if redir:
+        return redirect(redir['new_url'], code=redir['redirect_type'])
+    return None
 
 @app.route('/')
 def index():
@@ -991,6 +1013,80 @@ def admin_set_interval():
 def admin_logout():
     session.pop('admin_logged_in', None)
     return redirect(url_for('admin_login'))
+
+@app.route('/admin/redirects')
+@login_required
+def admin_redirects():
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM url_redirects ORDER BY created_at DESC")
+        redirects = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('admin_redirects.html', redirects=redirects)
+    except Exception as e:
+        print(f"Redirects error: {e}")
+        return render_template('admin_redirects.html', redirects=[])
+
+@app.route('/admin/add-redirect', methods=['POST'])
+@login_required
+def admin_add_redirect():
+    old_url = request.form.get('old_url', '').strip()
+    new_url = request.form.get('new_url', '').strip()
+    redirect_type = int(request.form.get('redirect_type', 301))
+    
+    if old_url and new_url:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            if USE_MYSQL:
+                cursor.execute("""
+                    INSERT INTO url_redirects (old_url, new_url, redirect_type) VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE new_url = VALUES(new_url), redirect_type = VALUES(redirect_type)
+                """, (old_url, new_url, redirect_type))
+            else:
+                cursor.execute("""
+                    INSERT INTO url_redirects (old_url, new_url, redirect_type) VALUES (%s, %s, %s)
+                    ON CONFLICT (old_url) DO UPDATE SET new_url = EXCLUDED.new_url, redirect_type = EXCLUDED.redirect_type
+                """, (old_url, new_url, redirect_type))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Add redirect error: {e}")
+    
+    return redirect(url_for('admin_redirects'))
+
+@app.route('/admin/delete-redirect/<int:redirect_id>', methods=['POST'])
+@login_required
+def admin_delete_redirect(redirect_id):
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("DELETE FROM url_redirects WHERE id = %s", (redirect_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Delete redirect error: {e}")
+    
+    return redirect(url_for('admin_redirects'))
+
+@app.route('/admin/toggle-redirect/<int:redirect_id>', methods=['POST'])
+@login_required
+def admin_toggle_redirect(redirect_id):
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("UPDATE url_redirects SET is_active = NOT is_active WHERE id = %s", (redirect_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Toggle redirect error: {e}")
+    
+    return redirect(url_for('admin_redirects'))
 
 def check_scheduled_scrape():
     try:
