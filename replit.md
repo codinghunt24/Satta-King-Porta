@@ -58,6 +58,10 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 ## Recent Changes
+- 2026-02-02: Advanced SEO news system with Schema.org, Open Graph, pagination
+- 2026-02-02: Admin news editor with rich text (H1-H3, bold, links, images, tables)
+- 2026-02-02: Single news post with Article schema, FAQ, share buttons
+- 2026-02-02: URL Redirects admin panel for preserving indexed PHP URLs
 - 2026-02-02: Migrated from PHP to Python Flask
 - 2026-02-02: Added cloudscraper for Cloudflare bypass
 - 2026-02-02: Added dual database support (MySQL/PostgreSQL)
