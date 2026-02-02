@@ -74,13 +74,43 @@
             <div class="card">
                 <h3 class="card-title">Auto Scrape Settings</h3>
                 
-                <div style="margin-bottom: 20px;">
-                    <p style="color: #10b981;"><strong>Last Auto Scrape:</strong> {{ last_auto_scrape or 'Never' }}</p>
-                    <p style="color: #9ca3af; margin-top: 5px;">Auto-scrape runs every 30 minutes with Cloudflare bypass</p>
+                <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <p style="color: #ffd700; font-size: 1.1rem; margin-bottom: 5px;"><strong>🕐 India Time (IST)</strong></p>
+                            <p id="india-time" style="color: #fff; font-size: 1.4rem; font-weight: bold;">{{ india_time }}</p>
+                        </div>
+                        <div>
+                            <p style="color: #10b981;"><strong>Last Scrape:</strong> {{ last_auto_scrape or 'Never' }}</p>
+                            <p style="color: #9ca3af; margin-top: 5px;">Interval: Every <strong style="color: #ffd700;">{{ scrape_interval }}</strong> minutes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #111827; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #374151;">
+                    <h4 style="color: #ffd700; margin-bottom: 15px;">⏱️ Set Auto Scrape Interval</h4>
+                    <p style="color: #9ca3af; margin-bottom: 15px;">Set how often data should be scraped automatically (in minutes)</p>
+                    <form method="post" action="/admin/set-interval">
+                        <div class="form-inline">
+                            <select name="interval" style="padding: 12px 15px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: #fff; min-width: 200px;">
+                                <option value="5" {% if scrape_interval == '5' %}selected{% endif %}>Every 5 Minutes</option>
+                                <option value="10" {% if scrape_interval == '10' %}selected{% endif %}>Every 10 Minutes</option>
+                                <option value="15" {% if scrape_interval == '15' %}selected{% endif %}>Every 15 Minutes</option>
+                                <option value="30" {% if scrape_interval == '30' or not scrape_interval %}selected{% endif %}>Every 30 Minutes</option>
+                                <option value="60" {% if scrape_interval == '60' %}selected{% endif %}>Every 1 Hour</option>
+                                <option value="120" {% if scrape_interval == '120' %}selected{% endif %}>Every 2 Hours</option>
+                                <option value="180" {% if scrape_interval == '180' %}selected{% endif %}>Every 3 Hours</option>
+                                <option value="300" {% if scrape_interval == '300' %}selected{% endif %}>Every 5 Hours</option>
+                                <option value="720" {% if scrape_interval == '720' %}selected{% endif %}>Every 12 Hours</option>
+                                <option value="1440" {% if scrape_interval == '1440' %}selected{% endif %}>Every 24 Hours</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Set Interval</button>
+                        </div>
+                    </form>
                 </div>
                 
                 <form method="post" action="/admin/scrape-now" style="margin-bottom: 30px;">
-                    <button type="submit" class="btn btn-success">Run Auto Scrape Now (Cloudflare Bypass)</button>
+                    <button type="submit" class="btn btn-success" style="padding: 12px 25px; font-size: 1rem;">🔄 Run Auto Scrape Now (Cloudflare Bypass)</button>
                 </form>
                 
                 <h4 style="color: #ffd700; margin: 20px 0 15px;">Scrape Sources</h4>

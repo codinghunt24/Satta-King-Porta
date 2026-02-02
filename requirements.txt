@@ -1,0 +1,7 @@
+pytz
+apscheduler
+cloudscraper
+flask
+psycopg2-binary
+pymysql
+python-dotenv

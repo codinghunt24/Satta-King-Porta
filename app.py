@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 import cloudscraper
 from functools import wraps
+import pytz
+
+IST = pytz.timezone('Asia/Kolkata')
 
 load_dotenv()
 
@@ -849,7 +852,9 @@ def admin_dashboard():
             adsense_publisher_id=get_setting('adsense_publisher_id'),
             adsense_auto_ads=get_setting('adsense_auto_ads'),
             auto_publish_enabled=get_setting('auto_publish_enabled', '1'),
-            auto_publish_hour=get_setting('auto_publish_hour', '1')
+            auto_publish_hour=get_setting('auto_publish_hour', '1'),
+            india_time=datetime.now(IST).strftime('%d %b %Y, %I:%M:%S %p IST'),
+            scrape_interval=get_setting('scrape_interval_minutes', '30')
         )
     except Exception as e:
         print(f"Admin error: {e}")
@@ -909,6 +914,22 @@ def admin_delete_schedule():
             print(f"Error deleting schedule: {e}")
     return redirect(url_for('admin_dashboard', page='auto-scrape'))
 
+@app.route('/admin/set-interval', methods=['POST'])
+@login_required
+def admin_set_interval():
+    interval = request.form.get('interval', '30')
+    try:
+        interval_int = int(interval)
+        if interval_int < 1:
+            interval_int = 1
+        if interval_int > 1440:
+            interval_int = 1440
+        set_setting('scrape_interval_minutes', str(interval_int))
+        schedule_auto_scrape()
+    except:
+        pass
+    return redirect(url_for('admin_dashboard', page='auto-scrape'))
+
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_logged_in', None)
@@ -933,9 +954,25 @@ def check_scheduled_scrape():
     except Exception as e:
         print(f"Schedule check error: {e}")
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=run_auto_scrape, trigger="interval", minutes=30)
-scheduler.add_job(func=check_scheduled_scrape, trigger="interval", minutes=1)
+def get_scrape_interval():
+    interval = get_setting('scrape_interval_minutes', '30')
+    try:
+        return int(interval)
+    except:
+        return 30
+
+def get_india_time():
+    return datetime.now(IST).strftime('%d %b %Y, %I:%M:%S %p IST')
+
+scheduler = BackgroundScheduler(timezone=IST)
+
+def schedule_auto_scrape():
+    interval = get_scrape_interval()
+    scheduler.remove_all_jobs()
+    scheduler.add_job(func=run_auto_scrape, trigger="interval", minutes=interval, id='auto_scrape')
+    print(f"Auto-scrape scheduled every {interval} minutes")
+
+schedule_auto_scrape()
 scheduler.start()
 
 if __name__ == '__main__':
