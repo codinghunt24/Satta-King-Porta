@@ -421,14 +421,15 @@ def index():
                 'time': r['result_time'],
                 'today': '--',
                 'yesterday': '--',
-                'time_slot': r['time_slot'] or '23:59:00'
+                'time_slot': r['time_slot'] or '23:59:00',
+                'display_order': r['display_order'] or 999
             }
         if r['result_date'] == today:
             game_results[game_name]['today'] = r['result']
         else:
             game_results[game_name]['yesterday'] = r['result']
     
-    game_results = sorted(game_results.values(), key=lambda x: x['time_slot'])
+    game_results = sorted(game_results.values(), key=lambda x: x['display_order'])
     
     chart_by_date = {}
     for row in chart_data:
