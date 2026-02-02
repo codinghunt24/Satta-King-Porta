@@ -1,0 +1,32 @@
+root@mail:/home/digitalcash24/sattaking.com.im# sudo journalctl -u sattaking --since "10 minutes ago" --no-pager | tail -30
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:18:37 +0100] [2096053] [INFO] Starting gunicorn 23.0.0
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:18:37 +0100] [2096053] [INFO] Listening at: http://0.0.0.0:8001 (2096053)
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:18:37 +0100] [2096053] [INFO] Using worker: sync
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096079]: [2026-02-02 23:18:37 +0100] [2096079] [INFO] Booting worker with pid: 2096079
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096080]: [2026-02-02 23:18:37 +0100] [2096080] [INFO] Booting worker with pid: 2096080
+Feb 02 23:18:37 mail.digitalcash24.com gunicorn[2096081]: [2026-02-02 23:18:37 +0100] [2096081] [INFO] Booting worker with pid: 2096081
+Feb 02 23:19:21 mail.digitalcash24.com systemd[1]: Stopping Satta King Flask Application...
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096080]: [2026-02-02 23:19:21 +0100] [2096080] [INFO] Worker exiting (pid: 2096080)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096080]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096080]: Daily post scheduler running (checks every minute)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096081]: [2026-02-02 23:19:21 +0100] [2096081] [INFO] Worker exiting (pid: 2096081)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096079]: [2026-02-02 23:19:21 +0100] [2096079] [INFO] Worker exiting (pid: 2096079)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096081]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096081]: Daily post scheduler running (checks every minute)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096079]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096079]: Daily post scheduler running (checks every minute)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:19:21 +0100] [2096053] [INFO] Handling signal: term
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:19:21 +0100] [2096053] [ERROR] Worker (pid:2096081) was sent SIGTERM!
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:19:21 +0100] [2096053] [ERROR] Worker (pid:2096079) was sent SIGTERM!
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:19:21 +0100] [2096053] [ERROR] Worker (pid:2096080) was sent SIGTERM!
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096053]: [2026-02-02 23:19:21 +0100] [2096053] [INFO] Shutting down: Master
+Feb 02 23:19:21 mail.digitalcash24.com systemd[1]: sattaking.service: Succeeded.
+Feb 02 23:19:21 mail.digitalcash24.com systemd[1]: Stopped Satta King Flask Application.
+Feb 02 23:19:21 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096443]: [2026-02-02 23:19:21 +0100] [2096443] [INFO] Starting gunicorn 23.0.0
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096443]: [2026-02-02 23:19:21 +0100] [2096443] [INFO] Listening at: http://0.0.0.0:8001 (2096443)
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096443]: [2026-02-02 23:19:21 +0100] [2096443] [INFO] Using worker: sync
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096454]: [2026-02-02 23:19:21 +0100] [2096454] [INFO] Booting worker with pid: 2096454
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096459]: [2026-02-02 23:19:21 +0100] [2096459] [INFO] Booting worker with pid: 2096459
+Feb 02 23:19:21 mail.digitalcash24.com gunicorn[2096460]: [2026-02-02 23:19:21 +0100] [2096460] [INFO] Booting worker with pid: 2096460
+root@mail:/home/digitalcash24/sattaking.com.im# 
