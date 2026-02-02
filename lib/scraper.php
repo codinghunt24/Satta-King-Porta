@@ -279,6 +279,47 @@ class SattaScraper {
             return $data;
         }
         
+        // Pattern 0: satta.ink - result-card with game-name, game-time, score-now, score-old
+        if (strpos($html, 'result-card') !== false && strpos($html, 'game-name') !== false && strpos($html, 'score-now') !== false) {
+            preg_match_all('/<div[^>]*class=["\']result-card["\'][^>]*>.*?<span[^>]*class=["\']game-name["\'][^>]*>([^<]+)<\/span>.*?<span[^>]*class=["\']game-time["\'][^>]*>Draw:\s*(\d{1,2}:\d{2}\s*[AP]M)<\/span>.*?<div[^>]*class=["\']score-now["\'][^>]*>(\d{2}|XX)<\/div>.*?<div[^>]*class=["\']score-old["\'][^>]*>Yest:\s*(\d{2}|XX)<\/div>/is', $html, $matches, PREG_SET_ORDER);
+            
+            foreach ($matches as $match) {
+                $gameName = trim($match[1]);
+                $timeStr = trim($match[2]);
+                $todayResult = trim($match[3]);
+                $yesterdayResult = trim($match[4]);
+                
+                if (!$this->isValidGameName($gameName)) {
+                    continue;
+                }
+                
+                $time24 = date('H:i:s', strtotime($timeStr));
+                $normalizedName = $this->normalizeGameName($gameName);
+                
+                if (preg_match('/^\d{2}$/', $yesterdayResult)) {
+                    $data[] = [
+                        'game_name' => $normalizedName,
+                        'result' => $yesterdayResult,
+                        'result_time' => $time24,
+                        'result_date' => $yesterday
+                    ];
+                }
+                
+                if (preg_match('/^\d{2}$/', $todayResult)) {
+                    $data[] = [
+                        'game_name' => $normalizedName,
+                        'result' => $todayResult,
+                        'result_time' => $time24,
+                        'result_date' => $today
+                    ];
+                }
+            }
+            
+            if (!empty($data)) {
+                return $data;
+            }
+        }
+        
         // Pattern 1: satta-king-fast.com - game-result rows with game-name, game-time, yesterday-number, today-number
         // Supports both single and double quotes in class attributes
         if (strpos($html, 'game-result') !== false && strpos($html, 'game-name') !== false) {
