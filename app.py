@@ -375,6 +375,11 @@ class SattaScraper:
         today = datetime.now(IST).strftime('%Y-%m-%d')
         new_results = []
         
+        today_count = sum(1 for row in data if row.get('result_date') == today)
+        yesterday_count = len(data) - today_count
+        dates_in_data = set(row.get('result_date') for row in data)
+        print(f"DEBUG save_data: IST today={today}, dates_in_data={dates_in_data}, today_count={today_count}, yesterday_count={yesterday_count}")
+        
         try:
             conn = get_db()
             cursor = get_cursor(conn)
