@@ -84,15 +84,17 @@ def get_vapid_keys():
     """Get or generate VAPID keys for push notifications"""
     import base64
     from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.backends import default_backend
     
     private_key = get_setting('vapid_private_key')
     public_key = get_setting('vapid_public_key')
     
     if not private_key or not public_key:
-        vapid = Vapid()
-        vapid.generate_keys()
-        private_key = vapid.private_pem().decode('utf-8')
-        pub_bytes = vapid.public_key.public_bytes(
+        key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+        priv_bytes = key.private_numbers().private_value.to_bytes(32, 'big')
+        private_key = base64.urlsafe_b64encode(priv_bytes).decode('utf-8').rstrip('=')
+        pub_bytes = key.public_key().public_bytes(
             serialization.Encoding.X962, 
             serialization.PublicFormat.UncompressedPoint
         )
