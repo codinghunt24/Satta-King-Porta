@@ -1,0 +1,32 @@
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Tue 2026-02-03 00:03:19 CET. --
+Feb 02 23:51:52 mail.digitalcash24.com systemd[1]: sattaking.service: Succeeded.
+Feb 02 23:51:52 mail.digitalcash24.com systemd[1]: Stopped Satta King Flask Application.
+Feb 02 23:51:52 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 02 23:51:52 mail.digitalcash24.com gunicorn[2112725]: [2026-02-02 23:51:52 +0100] [2112725] [INFO] Starting gunicorn 23.0.0
+Feb 02 23:51:52 mail.digitalcash24.com gunicorn[2112725]: [2026-02-02 23:51:52 +0100] [2112725] [INFO] Listening at: http://0.0.0.0:8001 (2112725)
+Feb 02 23:51:52 mail.digitalcash24.com gunicorn[2112725]: [2026-02-02 23:51:52 +0100] [2112725] [INFO] Using worker: sync
+Feb 02 23:51:52 mail.digitalcash24.com gunicorn[2112755]: [2026-02-02 23:51:52 +0100] [2112755] [INFO] Booting worker with pid: 2112755
+Feb 02 23:59:06 mail.digitalcash24.com systemd[1]: Stopping Satta King Flask Application...
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: [2026-02-02 23:59:06 +0100] [2112755] [INFO] Worker exiting (pid: 2112755)
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: [2026-02-02 23:59:06 +0100] [2112725] [INFO] Handling signal: term
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: Auto-scrape scheduled every 5 minutes
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: Daily post scheduler running (checks every minute)
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: Database error: invalid input syntax for type date: "%s"
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: LINE 6:                 WHERE sr.result_date IN ('%s', '%s')
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]:                                                  ^
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: Database error: invalid input syntax for type date: "%s"
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]: LINE 6:                 WHERE sr.result_date IN ('%s', '%s')
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112755]:                                                  ^
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: [2026-02-02 23:59:06 +0100] [2112725] [INFO] Shutting down: Master
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: Auto-scrape scheduled every 5 minutes
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: Daily post scheduler running (checks every minute)
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: Parsed 88 game results from satta-king-fast.com
+Feb 02 23:59:06 mail.digitalcash24.com gunicorn[2112725]: Error saving data: there is no unique or exclusion constraint matching the ON CONFLICT specification
+Feb 02 23:59:06 mail.digitalcash24.com systemd[1]: sattaking.service: Succeeded.
+Feb 02 23:59:06 mail.digitalcash24.com systemd[1]: Stopped Satta King Flask Application.
+Feb 02 23:59:06 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 02 23:59:07 mail.digitalcash24.com gunicorn[2116307]: [2026-02-02 23:59:07 +0100] [2116307] [INFO] Starting gunicorn 23.0.0
+Feb 02 23:59:07 mail.digitalcash24.com gunicorn[2116307]: [2026-02-02 23:59:07 +0100] [2116307] [INFO] Listening at: http://0.0.0.0:8001 (2116307)
+Feb 02 23:59:07 mail.digitalcash24.com gunicorn[2116307]: [2026-02-02 23:59:07 +0100] [2116307] [INFO] Using worker: sync
+Feb 02 23:59:07 mail.digitalcash24.com gunicorn[2116338]: [2026-02-02 23:59:07 +0100] [2116338] [INFO] Booting worker with pid: 2116338
+root@mail:/home/digitalcash24/sattaking.com.im# 
