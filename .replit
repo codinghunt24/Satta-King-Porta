@@ -1,4 +1,4 @@
-modules = ["php-8.3", "php-8.4", "python-3.11", "postgresql-16"]
+modules = ["web", "python-3.11", "postgresql-16"]
 [agent]
 expertMode = true
 
@@ -12,15 +12,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Satta King Python"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Satta King Python"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python app.py"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload app:app"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -32,7 +32,8 @@ externalPort = 80
 
 [nix]
 channel = "stable-25_05"
+packages = ["cargo", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "rustc"]
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["php", "-S", "0.0.0.0:5000", "router.php"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]

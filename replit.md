@@ -1,68 +1,59 @@
-# Satta King Website
+# Satta King Results Website
 
 ## Overview
-A Satta King results website built with Python Flask that displays game results, charts, and news. Features Cloudflare bypass for auto-scraping, 30-minute intervals, and admin panel. Supports both MySQL (production) and PostgreSQL (Replit).
+This is a Flask-based web application for displaying Satta King game results. The application scrapes results from external sources and displays them with a modern, responsive UI.
 
 ## Project Structure
-- `app.py` - Main Flask application with all routes
+- `app.py` - Main Flask application with routes, scraping logic, and database functions
+- `main.py` - Entry point for the application (imports app from app.py)
+- `static/` - Static assets (CSS, JS, images)
 - `templates/` - Jinja2 HTML templates
-  - `base.html` - Base template with header/footer
-  - `index.html` - Homepage with live results
-  - `post.html` - Individual game result page
-  - `chart.html` - Historical results chart
-  - `admin.html` - Admin panel
-  - `news.html` / `news-post.html` - News pages
-  - `page.html` - Static pages
-  - `daily-updates.html` - Daily updates
-- `static/css/` - Stylesheets (same as PHP version)
-- `requirements.txt` - Python dependencies
+- `attached_assets/` - SQL dump and other assets
+
+## Tech Stack
+- **Backend**: Flask (Python 3.11)
+- **Database**: PostgreSQL (via psycopg2-binary)
+- **Web Server**: Gunicorn
+- **Key Libraries**:
+  - `flask` - Web framework
+  - `apscheduler` - Background task scheduling
+  - `cloudscraper` - Bypass Cloudflare protection for scraping
+  - `pywebpush` / `py-vapid` - Push notifications
+  - `pytz` - Timezone handling (IST)
+
+## Database Schema
+The application uses PostgreSQL with the following tables:
+- `site_settings` - Key-value store for app configuration
+- `ad_placements` - Advertisement placement management
+- `games` - List of games with time slots
+- `satta_results` - Game results by date
+- `posts` - Daily result posts for SEO
+- `news_posts` - News articles
+- `site_pages` - Static pages (about, contact, etc.)
+- `scrape_sources` - URLs to scrape for results
+- `scrape_logs` - Scraping activity logs
+- `push_subscribers` - Push notification subscribers
+- `url_redirects` - URL redirection rules
+- `notification_logs` - Push notification history
 
 ## Key Features
-- **Cloudflare Bypass**: Uses cloudscraper library for satta-king-fast.com
-- **Dual Database**: MySQL for production, PostgreSQL for Replit testing
-- **Auto-Scrape**: APScheduler runs scraping every 30 minutes
-- **SEO-Rich**: Same URL structure as PHP (/post/, /chart, /news/, /page/)
-- **91 Games**: Supports satta.ink (35 games) + satta-king-fast.com (56 games)
+1. **Auto-scraping**: Scrapes results every 30 minutes from configured sources
+2. **Daily Posts**: Automatically creates daily result posts at scheduled time
+3. **Push Notifications**: Sends push notifications when new results are available
+4. **Result Charts**: Monthly/yearly result charts per game
+5. **SEO Optimized**: Meta tags, sitemaps, and structured data
 
-## Database
-Supports both MySQL and PostgreSQL:
-- `games` - List of games and time slots
-- `satta_results` - Game results by date
-- `posts` - Daily update posts
-- `news_posts` - News articles
-- `site_pages` - Static pages
-- `site_settings` - Site configuration
-- `ad_placements` - Google AdSense placements
-- `scrape_sources` - Scraper source URLs
-
-## Admin Panel
-Access at `/admin`
-- Login with `SESSION_SECRET` environment variable
-- Manage results, games, posts, news, pages, ads
-- Manual and auto scraping controls
+## Running the Application
+The application runs on port 5000 using Gunicorn:
+```bash
+gunicorn --bind 0.0.0.0:5000 --reuse-port --reload app:app
+```
 
 ## Environment Variables
-- `DATABASE_URL` - PostgreSQL (Replit) or omit for MySQL
-- `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` - MySQL (production)
-- `SESSION_SECRET` - Admin panel password
-
-## Running the Project
-```
-python app.py
-```
-
-## Production Deployment
-Use gunicorn:
-```
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
+- `DATABASE_URL` - PostgreSQL connection string (auto-configured by Replit)
+- `SESSION_SECRET` - Flask session secret key
 
 ## Recent Changes
-- 2026-02-02: Advanced SEO news system with Schema.org, Open Graph, pagination
-- 2026-02-02: Admin news editor with rich text (H1-H3, bold, links, images, tables)
-- 2026-02-02: Single news post with Article schema, FAQ, share buttons
-- 2026-02-02: URL Redirects admin panel for preserving indexed PHP URLs
-- 2026-02-02: Migrated from PHP to Python Flask
-- 2026-02-02: Added cloudscraper for Cloudflare bypass
-- 2026-02-02: Added dual database support (MySQL/PostgreSQL)
-- 2026-02-02: Implemented APScheduler for 30-min auto-scrape
+- **Feb 2, 2026**: Migrated to Replit environment with PostgreSQL database
+- All tables created and default data seeded
+- Application configured to run on Replit with proper workflow settings
