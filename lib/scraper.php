@@ -300,9 +300,6 @@ class SattaScraper {
                 $time24 = date('H:i:s', strtotime($timeStr));
                 $normalizedName = $this->normalizeGameName($gameName);
                 
-                // Update game display order
-                $this->pdo->prepare("UPDATE games SET display_order = ? WHERE name = ?")->execute([$gameOrder, $normalizedName]);
-                
                 // Save yesterday result (only if actual number)
                 if (preg_match('/^\d{2}$/', $yesterdayResult)) {
                     $data[] = [
