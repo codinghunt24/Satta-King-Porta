@@ -1,0 +1,30 @@
+root@mail:/home/digitalcash24/sattaking.com.im# sudo journalctl -u sattaking --since "30 minutes ago" --no-pager | grep -i "parsed\|scrape\|error"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096459]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096460]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:34:06 mail.digitalcash24.com gunicorn[2100472]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:34:06 mail.digitalcash24.com gunicorn[2100455]: [2026-02-02 23:34:06 +0100] [2100455] [ERROR] Worker (pid:2100472) was sent SIGTERM!
+Feb 02 23:34:06 mail.digitalcash24.com gunicorn[2100455]: Auto-scrape scheduled every 30 minutes
+Feb 02 23:34:06 mail.digitalcash24.com gunicorn[2100455]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+root@mail:/home/digitalcash24/sattaking.com.im# 
