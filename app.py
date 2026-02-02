@@ -226,8 +226,8 @@ class SattaScraper:
     
     def parse_satta_ink(self, html):
         data = []
-        today = datetime.now().strftime('%Y-%m-%d')
-        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
+        yesterday = (datetime.now(IST) - timedelta(days=1)).strftime('%Y-%m-%d')
         
         pattern = r'<div[^>]*class=["\']result-card["\'][^>]*>.*?<span[^>]*class=["\']game-name["\'][^>]*>([^<]+)</span>.*?<span[^>]*class=["\']game-time["\'][^>]*>Draw:\s*(\d{1,2}:\d{2}\s*[AP]M)</span>.*?<div[^>]*class=["\']score-now["\'][^>]*>(\d{2}|XX)</div>.*?<div[^>]*class=["\']score-old["\'][^>]*>Yest:\s*(\d{2}|XX)</div>'
         matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
@@ -269,8 +269,8 @@ class SattaScraper:
     
     def parse_satta_king_fast(self, html):
         data = []
-        today = datetime.now().strftime('%Y-%m-%d')
-        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
+        yesterday = (datetime.now(IST) - timedelta(days=1)).strftime('%Y-%m-%d')
         
         game_rows = re.findall(r'<tr[^>]*class=["\'][^"\']*game-result[^"\']*["\'][^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
         
@@ -354,7 +354,7 @@ class SattaScraper:
     
     def save_data(self, data, source_url):
         updated = 0
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
         new_results = []
         
         try:
@@ -473,7 +473,7 @@ def should_run_auto_scrape():
         return True
     try:
         last_time = datetime.strptime(last_run, '%Y-%m-%d %H:%M:%S')
-        return (datetime.now() - last_time).total_seconds() >= 1800
+        return (datetime.now(IST).replace(tzinfo=None) - last_time).total_seconds() >= 1800
     except:
         return True
 
@@ -577,8 +577,8 @@ def handle_redirects():
 def index():
     trigger_auto_scrape_if_needed()
     
-    today = datetime.now().strftime('%Y-%m-%d')
-    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    today = datetime.now(IST).strftime('%Y-%m-%d')
+    yesterday = (datetime.now(IST) - timedelta(days=1)).strftime('%Y-%m-%d')
     
     last_update = get_setting('last_auto_scrape')
     try:
@@ -664,7 +664,7 @@ def index():
         today=today,
         yesterday=yesterday,
         last_update_formatted=last_update_formatted,
-        current_date=datetime.now().strftime('%d %B %Y'),
+        current_date=datetime.now(IST).strftime('%d %B %Y'),
         adsense_auto_ads=get_setting('adsense_auto_ads'),
         adsense_verification=get_setting('adsense_verification'),
         analytics_code=get_setting('google_analytics_code'),
@@ -826,8 +826,8 @@ def post(slug):
 @app.route('/chart')
 def chart():
     game_name = request.args.get('game', '')
-    selected_month = int(request.args.get('month', datetime.now().month))
-    selected_year = int(request.args.get('year', datetime.now().year))
+    selected_month = int(request.args.get('month', datetime.now(IST).month))
+    selected_year = int(request.args.get('year', datetime.now(IST).year))
     
     try:
         conn = get_db()
@@ -849,7 +849,7 @@ def chart():
         available_years = [r['year'] for r in cursor.fetchall()]
         
         if not available_years:
-            current_year = datetime.now().year
+            current_year = datetime.now(IST).year
             available_years = [current_year, current_year - 1, current_year - 2]
         
         results = []
@@ -1049,7 +1049,7 @@ def sitemap_index():
         conn.close()
         
         base_url = get_setting('site_url') or 'https://sattaking.com.im'
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
         
         xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1074,7 +1074,7 @@ def sitemap_index():
 def sitemap_main():
     """Main pages sitemap"""
     base_url = get_setting('site_url') or 'https://sattaking.com.im'
-    today = datetime.now().strftime('%Y-%m-%d')
+    today = datetime.now(IST).strftime('%Y-%m-%d')
     
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1097,7 +1097,7 @@ def sitemap_games():
         conn.close()
         
         base_url = get_setting('site_url') or 'https://sattaking.com.im'
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
         
         xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1170,7 +1170,7 @@ def sitemap_news():
             if hasattr(lastmod, 'strftime'):
                 lastmod = lastmod.strftime('%Y-%m-%d')
             else:
-                lastmod = datetime.now().strftime('%Y-%m-%d')
+                lastmod = datetime.now(IST).strftime('%Y-%m-%d')
             xml += f'<url><loc>{base_url}/news/{n["slug"]}</loc><lastmod>{lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n'
         
         xml += '</urlset>'
@@ -1191,7 +1191,7 @@ def sitemap_pages():
         conn.close()
         
         base_url = get_setting('site_url') or 'https://sattaking.com.im'
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now(IST).strftime('%Y-%m-%d')
         
         xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1858,7 +1858,7 @@ def admin_toggle_redirect(redirect_id):
 
 def check_scheduled_scrape():
     try:
-        now = datetime.now().strftime('%H:%M')
+        now = datetime.now(IST).strftime('%H:%M')
         conn = get_db()
         cursor = get_cursor(conn)
         cursor.execute("SELECT * FROM scrape_schedule WHERE is_active = 1")
