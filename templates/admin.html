@@ -51,6 +51,7 @@
                 <li class="{% if page == 'ads' %}active{% endif %}"><a href="/admin/dashboard?page=ads">Ads</a></li>
                 <li class="{% if page == 'sitemap' %}active{% endif %}"><a href="/admin/dashboard?page=sitemap">Sitemap</a></li>
                 <li class="{% if page == 'push' %}active{% endif %}"><a href="/admin/dashboard?page=push">Push Notifications</a></li>
+                <li class="{% if page == 'branding' %}active{% endif %}"><a href="/admin/dashboard?page=branding">Site Branding</a></li>
                 <li><a href="/admin/redirects">URL Redirects</a></li>
                 <li><a href="/admin/logout">Logout</a></li>
             </ul>
@@ -860,6 +861,86 @@
                         {% else %}
                         <tr><td colspan="6" style="color: #9ca3af; text-align: center;">No notifications sent yet</td></tr>
                         {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% elif page == 'branding' %}
+            <h1 style="margin-bottom: 30px;">Site Branding</h1>
+            
+            <div class="card">
+                <h3 class="card-title">Upload Site Logo, Favicon & Icon</h3>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Upload your site branding images. Recommended sizes: Logo (200x50px), Favicon (32x32px), Site Icon (192x192px)</p>
+                
+                <form method="post" action="/admin/upload-branding" enctype="multipart/form-data">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                        
+                        <div style="background: #111827; padding: 20px; border-radius: 10px; border: 1px solid #374151;">
+                            <h4 style="color: #ffd700; margin-bottom: 15px;">🏷️ Site Logo</h4>
+                            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 15px;">Main logo shown in header (PNG, JPG, SVG)</p>
+                            {% if site_logo %}
+                            <div style="margin-bottom: 15px; background: #1f2937; padding: 15px; border-radius: 8px; text-align: center;">
+                                <img src="{{ site_logo }}" alt="Current Logo" style="max-height: 60px; max-width: 100%;">
+                            </div>
+                            {% endif %}
+                            <input type="file" name="site_logo" accept="image/*" style="background: #1f2937; border: 1px dashed #374151; padding: 15px; width: 100%; border-radius: 6px; color: #9ca3af;">
+                        </div>
+                        
+                        <div style="background: #111827; padding: 20px; border-radius: 10px; border: 1px solid #374151;">
+                            <h4 style="color: #ffd700; margin-bottom: 15px;">⭐ Favicon</h4>
+                            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 15px;">Small icon in browser tab (ICO, PNG, 32x32px)</p>
+                            {% if site_favicon %}
+                            <div style="margin-bottom: 15px; background: #1f2937; padding: 15px; border-radius: 8px; text-align: center;">
+                                <img src="{{ site_favicon }}" alt="Current Favicon" style="max-height: 32px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" name="site_favicon" accept=".ico,.png,.jpg,.jpeg" style="background: #1f2937; border: 1px dashed #374151; padding: 15px; width: 100%; border-radius: 6px; color: #9ca3af;">
+                        </div>
+                        
+                        <div style="background: #111827; padding: 20px; border-radius: 10px; border: 1px solid #374151;">
+                            <h4 style="color: #ffd700; margin-bottom: 15px;">📱 Site Icon (PWA)</h4>
+                            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 15px;">App icon for mobile (PNG, 192x192px or larger)</p>
+                            {% if site_icon %}
+                            <div style="margin-bottom: 15px; background: #1f2937; padding: 15px; border-radius: 8px; text-align: center;">
+                                <img src="{{ site_icon }}" alt="Current Icon" style="max-height: 64px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" name="site_icon" accept="image/png" style="background: #1f2937; border: 1px dashed #374151; padding: 15px; width: 100%; border-radius: 6px; color: #9ca3af;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 25px; text-align: center;">
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 40px; font-size: 1rem;">Upload Images</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Current Branding Status</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Status</th>
+                            <th>Path</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Site Logo</td>
+                            <td>{% if site_logo %}<span style="color: #10b981;">✓ Uploaded</span>{% else %}<span style="color: #ef4444;">✗ Not Set</span>{% endif %}</td>
+                            <td style="color: #9ca3af;">{{ site_logo or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Favicon</td>
+                            <td>{% if site_favicon %}<span style="color: #10b981;">✓ Uploaded</span>{% else %}<span style="color: #ef4444;">✗ Not Set</span>{% endif %}</td>
+                            <td style="color: #9ca3af;">{{ site_favicon or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Site Icon (PWA)</td>
+                            <td>{% if site_icon %}<span style="color: #10b981;">✓ Uploaded</span>{% else %}<span style="color: #ef4444;">✗ Not Set</span>{% endif %}</td>
+                            <td style="color: #9ca3af;">{{ site_icon or 'N/A' }}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

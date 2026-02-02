@@ -42,6 +42,7 @@ The application uses PostgreSQL with the following tables:
 3. **Push Notifications**: Sends push notifications when new results are available
 4. **Result Charts**: Monthly/yearly result charts per game
 5. **SEO Optimized**: Meta tags, sitemaps, and structured data
+6. **Site Branding**: Upload custom logo, favicon, and site icon from Admin > Site Branding
 
 ## Running the Application
 The application runs on port 5000 using Gunicorn:
@@ -55,5 +56,6 @@ gunicorn --bind 0.0.0.0:5000 --reuse-port --reload app:app
 
 ## Recent Changes
 - **Feb 2, 2026**: Migrated to Replit environment with PostgreSQL database
-- All tables created and default data seeded
+- All tables created and production data imported (98 games, 8881 results, 192 posts)
 - Application configured to run on Replit with proper workflow settings
+- **Feb 3, 2026**: Added Site Branding feature in Admin panel for uploading logo, favicon, and site icon

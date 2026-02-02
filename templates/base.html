@@ -14,6 +14,8 @@
     <meta property="og:description" content="{% block og_description %}Get fastest Satta King results{% endblock %}">
     <meta property="og:type" content="website">
     <link rel="canonical" href="{% block canonical %}/{% endblock %}">
+    {% if site_favicon %}<link rel="icon" type="image/x-icon" href="{{ site_favicon }}">{% endif %}
+    {% if site_icon %}<link rel="apple-touch-icon" href="{{ site_icon }}">{% endif %}
     <link rel="stylesheet" href="/css/style.css">
     {% if analytics_code %}{{ analytics_code|safe }}{% endif %}
     {% if adsense_auto_ads %}{{ adsense_auto_ads|safe }}{% endif %}
@@ -24,7 +26,11 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <h1>Satta <span>King</span></h1>
+                    {% if site_logo %}
+                    <a href="/"><img src="{{ site_logo }}" alt="Satta King" style="max-height: 50px;"></a>
+                    {% else %}
+                    <h1><a href="/" style="text-decoration: none; color: inherit;">Satta <span>King</span></a></h1>
+                    {% endif %}
                 </div>
                 <button class="mobile-menu" onclick="toggleMenu()">&#9776;</button>
                 <nav id="mainNav">

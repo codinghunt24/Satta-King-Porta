@@ -2,7 +2,8 @@ import os
 import re
 import json
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, send_from_directory
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 import cloudscraper
@@ -18,6 +19,15 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv('SESSION_SECRET', 'default-secret-key')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 DATABASE_URL = os.getenv('DATABASE_URL', '')
 USE_MYSQL = os.getenv('MYSQL_HOST') or (not DATABASE_URL)
@@ -79,6 +89,14 @@ def set_setting(key, value):
         conn.close()
     except Exception as e:
         print(f"Error setting {key}: {e}")
+
+@app.context_processor
+def inject_branding():
+    return {
+        'site_logo': get_setting('site_logo'),
+        'site_favicon': get_setting('site_favicon'),
+        'site_icon': get_setting('site_icon')
+    }
 
 def get_vapid_keys():
     """Get or generate VAPID keys for push notifications"""
@@ -1432,7 +1450,10 @@ def admin_dashboard():
             push_prompt_message=get_setting('push_prompt_message'),
             push_on_result=get_setting('push_on_result', '1'),
             push_on_post=get_setting('push_on_post', '1'),
-            notification_logs=get_notification_logs()
+            notification_logs=get_notification_logs(),
+            site_logo=get_setting('site_logo'),
+            site_favicon=get_setting('site_favicon'),
+            site_icon=get_setting('site_icon')
         )
     except Exception as e:
         print(f"Admin error: {e}")
@@ -1530,6 +1551,29 @@ def admin_save_analytics():
     code = request.form.get('google_analytics_code', '').strip()
     set_setting('google_analytics_code', code)
     return redirect(url_for('admin_dashboard', page='ads'))
+
+@app.route('/admin/upload-branding', methods=['POST'])
+@login_required
+def admin_upload_branding():
+    upload_folder = app.config['UPLOAD_FOLDER']
+    
+    file_mappings = {
+        'site_logo': 'logo',
+        'site_favicon': 'favicon',
+        'site_icon': 'icon'
+    }
+    
+    for field_name, prefix in file_mappings.items():
+        file = request.files.get(field_name)
+        if file and file.filename and allowed_file(file.filename):
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{prefix}.{ext}"
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+            url_path = f"/uploads/{filename}"
+            set_setting(field_name, url_path)
+    
+    return redirect(url_for('admin_dashboard', page='branding'))
 
 @app.route('/admin/save-auto-ads', methods=['POST'])
 @login_required
