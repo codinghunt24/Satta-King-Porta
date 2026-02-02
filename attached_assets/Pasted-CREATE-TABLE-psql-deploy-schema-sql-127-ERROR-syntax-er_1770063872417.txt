@@ -1,0 +1,48 @@
+CREATE TABLE
+psql:deploy/schema.sql:127: ERROR:  syntax error at end of input
+LINE 1: CREATE TABLE IF NOT EXISTS url_redirects (
+                                                  ^
+(venv) root@mail:/home/digitalcash24/sattaking.com.im# psql -h localhost -U sattauser -d sattaking
+Password for user sattauser: 
+psql (12.22 (Ubuntu 12.22-0ubuntu0.20.04.4))
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+sattaking=> CREATE TABLE IF NOT EXISTS url_redirects (
+sattaking(>     id SERIAL PRIMARY KEY,
+sattaking(>     old_url TEXT NOT NULL,
+sattaking(>     new_url TEXT NOT NULL,
+sattaking(>     redirect_type INTEGER DEFAULT 301,
+sattaking(>     is_active BOOLEAN DEFAULT true,
+sattaking(>     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+sattaking(> );
+CREATE TABLE
+sattaking=> 
+sattaking=> CREATE TABLE IF NOT EXISTS notification_logs (
+sattaking(>     id SERIAL PRIMARY KEY,
+sattaking(>     title VARCHAR(255),
+sattaking(>     body TEXT,
+sattaking(>     url TEXT,
+sattaking(>     total_sent INTEGER DEFAULT 0,
+sattaking(>     success_count INTEGER DEFAULT 0,
+sattaking(>     fail_count INTEGER DEFAULT 0,
+sattaking(>     notification_type VARCHAR(50),
+sattaking(>     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+sattaking(> );
+CREATE TABLE
+sattaking=> 
+sattaking=> CREATE INDEX IF NOT EXISTS idx_satta_results_game_date ON satta_results(game_name, result_date);
+CREATE INDEX
+sattaking=> CREATE INDEX IF NOT EXISTS idx_satta_results_date ON satta_results(result_date);
+CREATE INDEX
+sattaking=> CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+CREATE INDEX
+sattaking=> CREATE INDEX IF NOT EXISTS idx_posts_date ON posts(post_date);
+CREATE INDEX
+sattaking=> CREATE INDEX IF NOT EXISTS idx_games_active ON games(is_active);
+CREATE INDEX
+sattaking=> CREATE INDEX IF NOT EXISTS idx_news_posts_slug ON news_posts(slug);
+CREATE INDEX
+sattaking=> \q
+(venv) root@mail:/home/digitalcash24/sattaking.com.im# psql -h localhost -U sattauser -d sattaking -f deploy/production_data.sql
+Password for user sattauser: 
