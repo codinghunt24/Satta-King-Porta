@@ -7,11 +7,15 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #334155; }
-        .header h1 { color: #ffd700; font-size: 1.8rem; }
-        .header a { color: #60a5fa; text-decoration: none; }
-        .header a:hover { text-decoration: underline; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 20px; border-right: 1px solid #334155; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar h2 { color: #ffd700; font-size: 1.5rem; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #e94560; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { margin-bottom: 5px; }
+        .sidebar a { display: block; padding: 12px 15px; color: #94a3b8; text-decoration: none; border-radius: 8px; transition: all 0.3s; }
+        .sidebar a:hover { background: #1e3a5f; color: #fff; }
+        .sidebar li.active a { background: linear-gradient(135deg, #e94560 0%, #c91f4d 100%); color: #fff; }
+        .main-content { flex: 1; margin-left: 250px; padding: 30px; }
         .card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border-radius: 15px; padding: 25px; margin-bottom: 25px; border: 1px solid #334155; }
         .card h2 { color: #ffd700; margin-bottom: 20px; font-size: 1.3rem; }
         .form-row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -37,8 +41,12 @@
         .info-box h4 { color: #ffd700; margin-bottom: 8px; }
         .info-box p { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
         .info-box code { background: #0f172a; padding: 2px 8px; border-radius: 4px; color: #10b981; }
-        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { color: #ffd700; font-size: 1.8rem; }
         @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+            .admin-container { flex-direction: column; }
             .form-row { flex-direction: column; }
             .form-group { min-width: 100%; }
             .actions { flex-direction: column; }
@@ -46,109 +54,123 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>URL Redirects</h1>
-            <div class="nav-links">
-                <a href="/admin/dashboard">Dashboard</a>
-                <a href="/admin/logout">Logout</a>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h2>Admin Panel</h2>
+            <ul>
+                <li><a href="/admin/dashboard?page=dashboard">Dashboard</a></li>
+                <li><a href="/admin/dashboard?page=results">Results</a></li>
+                <li><a href="/admin/dashboard?page=games">Games</a></li>
+                <li><a href="/admin/dashboard?page=posts">Posts</a></li>
+                <li><a href="/admin/dashboard?page=auto-scrape">Auto Scrape</a></li>
+                <li><a href="/admin/dashboard?page=news">News</a></li>
+                <li><a href="/admin/dashboard?page=pages">Pages</a></li>
+                <li><a href="/admin/dashboard?page=ads">Ads</a></li>
+                <li class="active"><a href="/admin/redirects">URL Redirects</a></li>
+                <li><a href="/admin/logout">Logout</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1>URL Redirects</h1>
             </div>
-        </div>
 
-        <div class="info-box">
-            <h4>URL Redirect Guide</h4>
-            <p>
-                Purane PHP URLs ko naye Python URLs pe redirect karein taaki SEO preserve rahe.<br>
-                <strong>Example:</strong> <code>/index.php</code> → <code>/</code> ya <code>/result.php?game=Desawar</code> → <code>/chart?game=Desawar</code><br>
-                <strong>301:</strong> Permanent redirect (SEO ke liye best) | <strong>302:</strong> Temporary redirect
-            </p>
-        </div>
-
-        <div class="card">
-            <h2>Add New Redirect</h2>
-            <form action="/admin/add-redirect" method="POST">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Old URL (with / at start)</label>
-                        <input type="text" name="old_url" placeholder="/old-page.php" required>
-                    </div>
-                    <div class="form-group">
-                        <label>New URL (redirect to)</label>
-                        <input type="text" name="new_url" placeholder="/new-page" required>
-                    </div>
-                    <div class="form-group" style="max-width: 150px;">
-                        <label>Type</label>
-                        <select name="redirect_type">
-                            <option value="301">301 (Permanent)</option>
-                            <option value="302">302 (Temporary)</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Redirect</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>All Redirects ({{ redirects|length }})</h2>
-            
-            {% if redirects %}
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Old URL</th>
-                            <th>New URL</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in redirects %}
-                        <tr>
-                            <td><code>{{ r.old_url }}</code></td>
-                            <td><code>{{ r.new_url }}</code></td>
-                            <td>{{ r.redirect_type }}</td>
-                            <td>
-                                {% if r.is_active %}
-                                <span class="status-active">Active</span>
-                                {% else %}
-                                <span class="status-inactive">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td class="actions">
-                                <form action="/admin/toggle-redirect/{{ r.id }}" method="POST" style="display: inline;">
-                                    <button type="submit" class="btn btn-warning">
-                                        {% if r.is_active %}Disable{% else %}Enable{% endif %}
-                                    </button>
-                                </form>
-                                <form action="/admin/delete-redirect/{{ r.id }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this redirect?');">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <p>No redirects added yet. Add your first redirect above.</p>
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="card">
-            <h2>Common Redirects (Copy & Paste)</h2>
             <div class="info-box">
+                <h4>URL Redirect Guide</h4>
                 <p>
-                    <code>/index.php</code> → <code>/</code><br>
-                    <code>/result.php</code> → <code>/</code><br>
-                    <code>/news.php</code> → <code>/news</code><br>
-                    <code>/contact.php</code> → <code>/page/contact</code><br>
-                    <code>/about.php</code> → <code>/page/about</code><br>
-                    <code>/disclaimer.php</code> → <code>/page/disclaimer</code>
+                    Purane PHP URLs ko naye Python URLs pe redirect karein taaki SEO preserve rahe.<br>
+                    <strong>Example:</strong> <code>/index.php</code> → <code>/</code> ya <code>/result.php?game=Desawar</code> → <code>/chart?game=Desawar</code><br>
+                    <strong>301:</strong> Permanent redirect (SEO ke liye best) | <strong>302:</strong> Temporary redirect
                 </p>
+            </div>
+
+            <div class="card">
+                <h2>Add New Redirect</h2>
+                <form action="/admin/add-redirect" method="POST">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Old URL (with / at start)</label>
+                            <input type="text" name="old_url" placeholder="/old-page.php" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New URL (redirect to)</label>
+                            <input type="text" name="new_url" placeholder="/new-page" required>
+                        </div>
+                        <div class="form-group" style="max-width: 150px;">
+                            <label>Type</label>
+                            <select name="redirect_type">
+                                <option value="301">301 (Permanent)</option>
+                                <option value="302">302 (Temporary)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Redirect</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>All Redirects ({{ redirects|length }})</h2>
+                
+                {% if redirects %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Old URL</th>
+                                <th>New URL</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in redirects %}
+                            <tr>
+                                <td><code>{{ r.old_url }}</code></td>
+                                <td><code>{{ r.new_url }}</code></td>
+                                <td>{{ r.redirect_type }}</td>
+                                <td>
+                                    {% if r.is_active %}
+                                    <span class="status-active">Active</span>
+                                    {% else %}
+                                    <span class="status-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="actions">
+                                    <form action="/admin/toggle-redirect/{{ r.id }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-warning">
+                                            {% if r.is_active %}Disable{% else %}Enable{% endif %}
+                                        </button>
+                                    </form>
+                                    <form action="/admin/delete-redirect/{{ r.id }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this redirect?');">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>No redirects added yet. Add your first redirect above.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>Common Redirects (Copy & Paste)</h2>
+                <div class="info-box">
+                    <p>
+                        <code>/index.php</code> → <code>/</code><br>
+                        <code>/result.php</code> → <code>/</code><br>
+                        <code>/news.php</code> → <code>/news</code><br>
+                        <code>/contact.php</code> → <code>/page/contact</code><br>
+                        <code>/about.php</code> → <code>/page/about</code><br>
+                        <code>/disclaimer.php</code> → <code>/page/disclaimer</code>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
