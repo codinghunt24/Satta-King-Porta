@@ -916,48 +916,174 @@ def static_page(slug):
         return "Error loading page", 500
 
 @app.route('/sitemap.xml')
-def sitemap():
+def sitemap_index():
+    """Main sitemap index - splits into multiple sitemaps for better indexing"""
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT slug, post_date FROM posts ORDER BY post_date DESC")
-            posts = cursor.fetchall()
-            
-            cursor.execute("SELECT slug FROM news_posts WHERE status = 'published'")
-            news = cursor.fetchall()
-            
-            cursor.execute("SELECT slug FROM site_pages")
-            pages = cursor.fetchall()
-            
-            cursor.execute("SELECT DISTINCT name FROM games")
-            games = cursor.fetchall()
+        cursor = get_cursor(conn)
+        
+        cursor.execute("SELECT DISTINCT EXTRACT(YEAR FROM post_date) as year, EXTRACT(MONTH FROM post_date) as month FROM posts ORDER BY year DESC, month DESC")
+        post_months = cursor.fetchall()
+        
+        cursor.close()
         conn.close()
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        
+        xml += f'<sitemap><loc>{base_url}/sitemap-main.xml</loc><lastmod>{today}</lastmod></sitemap>\n'
+        xml += f'<sitemap><loc>{base_url}/sitemap-games.xml</loc><lastmod>{today}</lastmod></sitemap>\n'
+        xml += f'<sitemap><loc>{base_url}/sitemap-news.xml</loc><lastmod>{today}</lastmod></sitemap>\n'
+        xml += f'<sitemap><loc>{base_url}/sitemap-pages.xml</loc><lastmod>{today}</lastmod></sitemap>\n'
+        
+        for pm in post_months:
+            year = int(pm['year'])
+            month = int(pm['month'])
+            xml += f'<sitemap><loc>{base_url}/sitemap-posts-{year}-{month:02d}.xml</loc><lastmod>{today}</lastmod></sitemap>\n'
+        
+        xml += '</sitemapindex>'
+        return Response(xml, mimetype='application/xml')
+    except Exception as e:
+        print(f"Sitemap index error: {e}")
+        return "Error generating sitemap", 500
+
+@app.route('/sitemap-main.xml')
+def sitemap_main():
+    """Main pages sitemap"""
+    base_url = get_setting('site_url') or 'https://sattaking.com.im'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml += f'<url><loc>{base_url}/</loc><lastmod>{today}</lastmod><changefreq>hourly</changefreq><priority>1.0</priority></url>\n'
+    xml += f'<url><loc>{base_url}/chart</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>\n'
+    xml += f'<url><loc>{base_url}/daily-updates</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n'
+    xml += f'<url><loc>{base_url}/news</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n'
+    xml += '</urlset>'
+    return Response(xml, mimetype='application/xml')
+
+@app.route('/sitemap-games.xml')
+def sitemap_games():
+    """All game chart pages"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT DISTINCT name FROM games ORDER BY name")
+        games = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        today = datetime.now().strftime('%Y-%m-%d')
         
         xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         
-        xml += '<url><loc>https://sattaking.com.im/</loc><priority>1.0</priority></url>\n'
-        xml += '<url><loc>https://sattaking.com.im/chart</loc><priority>0.9</priority></url>\n'
-        xml += '<url><loc>https://sattaking.com.im/daily-updates</loc><priority>0.8</priority></url>\n'
-        xml += '<url><loc>https://sattaking.com.im/news</loc><priority>0.7</priority></url>\n'
-        
-        for post in posts:
-            xml += f'<url><loc>https://sattaking.com.im/post/{post["slug"]}</loc><priority>0.6</priority></url>\n'
-        
-        for n in news:
-            xml += f'<url><loc>https://sattaking.com.im/news/{n["slug"]}</loc><priority>0.5</priority></url>\n'
-        
-        for p in pages:
-            xml += f'<url><loc>https://sattaking.com.im/page/{p["slug"]}</loc><priority>0.4</priority></url>\n'
-        
+        from urllib.parse import quote
         for g in games:
-            xml += f'<url><loc>https://sattaking.com.im/chart?game={g["name"]}</loc><priority>0.5</priority></url>\n'
+            game_name = quote(g['name'])
+            xml += f'<url><loc>{base_url}/chart?game={game_name}</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>\n'
         
         xml += '</urlset>'
-        
         return Response(xml, mimetype='application/xml')
     except Exception as e:
-        return "Error generating sitemap", 500
+        print(f"Sitemap games error: {e}")
+        return "Error", 500
+
+@app.route('/sitemap-posts-<int:year>-<int:month>.xml')
+def sitemap_posts_month(year, month):
+    """Monthly posts sitemap - handles ~100 daily posts per month efficiently"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        
+        cursor.execute("""
+            SELECT slug, post_date, updated_at 
+            FROM posts 
+            WHERE EXTRACT(YEAR FROM post_date) = %s AND EXTRACT(MONTH FROM post_date) = %s
+            ORDER BY post_date DESC
+        """, (year, month))
+        posts = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        
+        for post in posts:
+            lastmod = post.get('updated_at') or post['post_date']
+            if hasattr(lastmod, 'strftime'):
+                lastmod = lastmod.strftime('%Y-%m-%d')
+            else:
+                lastmod = str(lastmod)[:10]
+            xml += f'<url><loc>{base_url}/post/{post["slug"]}</loc><lastmod>{lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>\n'
+        
+        xml += '</urlset>'
+        return Response(xml, mimetype='application/xml')
+    except Exception as e:
+        print(f"Sitemap posts error: {e}")
+        return "Error", 500
+
+@app.route('/sitemap-news.xml')
+def sitemap_news():
+    """News articles sitemap"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT slug, updated_at FROM news_posts WHERE status = 'published' ORDER BY created_at DESC")
+        news = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        
+        for n in news:
+            lastmod = n.get('updated_at')
+            if hasattr(lastmod, 'strftime'):
+                lastmod = lastmod.strftime('%Y-%m-%d')
+            else:
+                lastmod = datetime.now().strftime('%Y-%m-%d')
+            xml += f'<url><loc>{base_url}/news/{n["slug"]}</loc><lastmod>{lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n'
+        
+        xml += '</urlset>'
+        return Response(xml, mimetype='application/xml')
+    except Exception as e:
+        print(f"Sitemap news error: {e}")
+        return "Error", 500
+
+@app.route('/sitemap-pages.xml')
+def sitemap_pages():
+    """Static pages sitemap"""
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT slug FROM site_pages")
+        pages = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        base_url = get_setting('site_url') or 'https://sattaking.com.im'
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        
+        for p in pages:
+            xml += f'<url><loc>{base_url}/page/{p["slug"]}</loc><lastmod>{today}</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>\n'
+        
+        xml += '</urlset>'
+        return Response(xml, mimetype='application/xml')
+    except Exception as e:
+        print(f"Sitemap pages error: {e}")
+        return "Error", 500
 
 def login_required(f):
     @wraps(f)
