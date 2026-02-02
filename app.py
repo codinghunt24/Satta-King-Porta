@@ -820,9 +820,10 @@ def news_post(slug):
 def static_page(slug):
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM site_pages WHERE slug = %s", (slug,))
-            page_data = cursor.fetchone()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM site_pages WHERE slug = %s", (slug,))
+        page_data = cursor.fetchone()
+        cursor.close()
         conn.close()
         
         if not page_data:
