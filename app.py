@@ -645,12 +645,13 @@ def chart():
 def daily_updates():
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT slug, title, meta_description, post_date, views, games_included 
-                FROM posts ORDER BY post_date DESC, created_at DESC LIMIT 50
-            """)
-            posts = cursor.fetchall()
+        cursor = get_cursor(conn)
+        cursor.execute("""
+            SELECT slug, title, meta_description, post_date, views, games_included 
+            FROM posts ORDER BY post_date DESC, created_at DESC LIMIT 50
+        """)
+        posts = cursor.fetchall()
+        cursor.close()
         conn.close()
         
         return render_template('daily_updates.html',
