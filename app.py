@@ -265,9 +265,10 @@ class SattaScraper:
 def run_auto_scrape():
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM scrape_sources WHERE is_active = 1")
-            sources = cursor.fetchall()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM scrape_sources WHERE is_active = 1")
+        sources = cursor.fetchall()
+        cursor.close()
         conn.close()
         
         if not sources:
@@ -279,9 +280,10 @@ def run_auto_scrape():
                 result = scraper.scrape(source['url'])
                 if result['success']:
                     conn = get_db()
-                    with conn.cursor() as cursor:
-                        cursor.execute("UPDATE scrape_sources SET last_scraped = CURRENT_TIMESTAMP WHERE id = %s", (source['id'],))
-                        conn.commit()
+                    cursor = get_cursor(conn)
+                    cursor.execute("UPDATE scrape_sources SET last_scraped_at = CURRENT_TIMESTAMP WHERE id = %s", (source['id'],))
+                    conn.commit()
+                    cursor.close()
                     conn.close()
             except Exception as e:
                 print(f"Error scraping {source['url']}: {e}")
