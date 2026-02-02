@@ -746,33 +746,42 @@ def admin_dashboard():
     
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) as cnt FROM games")
-            total_games = cursor.fetchone()['cnt']
-            
+        cursor = get_cursor(conn)
+        
+        cursor.execute("SELECT COUNT(*) as cnt FROM games")
+        row = cursor.fetchone()
+        total_games = row['cnt'] if row else 0
+        
+        if USE_MYSQL:
             cursor.execute("SELECT COUNT(*) as cnt FROM satta_results WHERE result_date = CURDATE()")
-            today_results = cursor.fetchone()['cnt']
-            
-            cursor.execute("SELECT COUNT(*) as cnt FROM posts")
-            total_posts = cursor.fetchone()['cnt']
-            
-            cursor.execute("SELECT * FROM games ORDER BY name")
-            games = cursor.fetchall()
-            
-            cursor.execute("SELECT * FROM posts ORDER BY post_date DESC, created_at DESC LIMIT 50")
-            posts = cursor.fetchall()
-            
-            cursor.execute("SELECT * FROM scrape_sources ORDER BY created_at DESC")
-            scrape_sources = cursor.fetchall()
-            
-            cursor.execute("SELECT * FROM news_posts ORDER BY created_at DESC")
-            news_posts = cursor.fetchall()
-            
-            cursor.execute("SELECT * FROM site_pages ORDER BY title")
-            site_pages = cursor.fetchall()
-            
-            cursor.execute("SELECT * FROM ad_placements ORDER BY position")
-            ad_placements = cursor.fetchall()
+        else:
+            cursor.execute("SELECT COUNT(*) as cnt FROM satta_results WHERE result_date = CURRENT_DATE")
+        row = cursor.fetchone()
+        today_results = row['cnt'] if row else 0
+        
+        cursor.execute("SELECT COUNT(*) as cnt FROM posts")
+        row = cursor.fetchone()
+        total_posts = row['cnt'] if row else 0
+        
+        cursor.execute("SELECT * FROM games ORDER BY name")
+        games = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM posts ORDER BY post_date DESC, created_at DESC LIMIT 50")
+        posts = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM scrape_sources ORDER BY created_at DESC")
+        scrape_sources = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM news_posts ORDER BY created_at DESC")
+        news_posts = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM site_pages ORDER BY title")
+        site_pages = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM ad_placements ORDER BY position")
+        ad_placements = cursor.fetchall()
+        
+        cursor.close()
         conn.close()
         
         return render_template('admin.html',
