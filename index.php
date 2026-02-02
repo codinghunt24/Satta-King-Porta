@@ -15,14 +15,27 @@ $lastUpdateStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE set
 $lastUpdateTime = $lastUpdateStmt->fetchColumn();
 $lastUpdateFormatted = $lastUpdateTime ? date('h:i A', strtotime($lastUpdateTime)) : 'Not yet';
 
-$allResults = $pdo->query("
-    SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%Y-%m-%d') as result_date, sr.result_time,
-           g.time_slot
-    FROM satta_results sr 
-    LEFT JOIN games g ON g.name = sr.game_name
-    WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
-    ORDER BY g.time_slot ASC, sr.game_name ASC
-")->fetchAll(PDO::FETCH_ASSOC);
+$isMySQL = (strpos(getenv('DATABASE_URL') ?: '', 'mysql') !== false) || !getenv('DATABASE_URL');
+
+if ($isMySQL) {
+    $allResults = $pdo->query("
+        SELECT sr.game_name, sr.result, DATE_FORMAT(sr.result_date, '%Y-%m-%d') as result_date, sr.result_time,
+               g.time_slot
+        FROM satta_results sr 
+        LEFT JOIN games g ON g.name = sr.game_name
+        WHERE sr.result_date IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)
+        ORDER BY g.time_slot ASC, sr.game_name ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $allResults = $pdo->query("
+        SELECT sr.game_name, sr.result, TO_CHAR(sr.result_date, 'YYYY-MM-DD') as result_date, sr.result_time,
+               g.time_slot
+        FROM satta_results sr 
+        LEFT JOIN games g ON g.name = sr.game_name
+        WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+        ORDER BY g.time_slot ASC, sr.game_name ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $gameResults = [];
 foreach ($allResults as $r) {
@@ -47,12 +60,21 @@ usort($gameResults, function($a, $b) {
     return strcmp($a['time_slot'], $b['time_slot']);
 });
 
-$chartData = $pdo->query("
-    SELECT result_date, game_name, result 
-    FROM satta_results 
-    WHERE result_date >= CURDATE() - INTERVAL 7 DAY
-    ORDER BY result_date DESC, game_name
-")->fetchAll(PDO::FETCH_ASSOC);
+if ($isMySQL) {
+    $chartData = $pdo->query("
+        SELECT result_date, game_name, result 
+        FROM satta_results 
+        WHERE result_date >= CURDATE() - INTERVAL 7 DAY
+        ORDER BY result_date DESC, game_name
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $chartData = $pdo->query("
+        SELECT result_date, game_name, result 
+        FROM satta_results 
+        WHERE result_date >= CURRENT_DATE - INTERVAL '7 days'
+        ORDER BY result_date DESC, game_name
+    ")->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $analyticsCode = '';
 $googleVerify = '';
