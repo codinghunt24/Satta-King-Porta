@@ -1,0 +1,28 @@
+root@mail:/home/digitalcash24/sattaking.com.im# psql -h localhost -U sattauser -d sattaking -c "\d satta_results"
+Password for user sattauser: 
+                                         Table "public.satta_results"
+   Column    |            Type             | Collation | Nullable |                  Default                  
+-------------+-----------------------------+-----------+----------+-------------------------------------------
+ id          | integer                     |           | not null | nextval('satta_results_id_seq'::regclass)
+ game_name   | character varying(100)      |           | not null | 
+ result      | character varying(10)       |           |          | 
+ result_time | time without time zone      |           |          | 
+ result_date | date                        |           |          | 
+ source_url  | text                        |           |          | 
+ scraped_at  | timestamp without time zone |           |          | 
+ created_at  | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+Indexes:
+    "satta_results_pkey" PRIMARY KEY, btree (id)
+    "satta_results_game_date_unique" UNIQUE CONSTRAINT, btree (game_name, result_date)
+    "idx_satta_results_date" btree (result_date)
+    "idx_satta_results_game_date" btree (game_name, result_date)
+
+root@mail:/home/digitalcash24/sattaking.com.im# grep -n "ON CONFLICT" /home/digitalcash24/sattaking.com.im/app.py | head -10
+85:                ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = CURRENT_TIMESTAMP
+398:                        ON CONFLICT (name) DO UPDATE SET time_slot = EXCLUDED.time_slot, display_order = EXCLUDED.display_order
+424:                            ON CONFLICT (game_name, result_date) DO UPDATE SET
+440:                            ON CONFLICT (game_name, result_date) DO NOTHING
+1313:                ON CONFLICT (endpoint) DO UPDATE SET p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth, is_active = TRUE
+1623:                    ON CONFLICT (placement_name) DO UPDATE SET ad_code = EXCLUDED.ad_code, is_active = EXCLUDED.is_active
+1871:                    ON CONFLICT (old_url) DO UPDATE SET new_url = EXCLUDED.new_url, redirect_type = EXCLUDED.redirect_type
+root@mail:/home/digitalcash24/sattaking.com.im# 
