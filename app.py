@@ -82,6 +82,9 @@ def set_setting(key, value):
 
 def get_vapid_keys():
     """Get or generate VAPID keys for push notifications"""
+    import base64
+    from cryptography.hazmat.primitives import serialization
+    
     private_key = get_setting('vapid_private_key')
     public_key = get_setting('vapid_public_key')
     
@@ -89,7 +92,11 @@ def get_vapid_keys():
         vapid = Vapid()
         vapid.generate_keys()
         private_key = vapid.private_pem().decode('utf-8')
-        public_key = vapid.public_key_urlsafe_base64()
+        pub_bytes = vapid.public_key.public_bytes(
+            serialization.Encoding.X962, 
+            serialization.PublicFormat.UncompressedPoint
+        )
+        public_key = base64.urlsafe_b64encode(pub_bytes).decode('utf-8').rstrip('=')
         set_setting('vapid_private_key', private_key)
         set_setting('vapid_public_key', public_key)
     
@@ -665,7 +672,9 @@ def index():
         below_title_ad=display_ad('below_title'),
         in_content_1_ad=display_ad('in_content_1'),
         in_content_2_ad=display_ad('in_content_2'),
-        before_footer_ad=display_ad('before_footer')
+        before_footer_ad=display_ad('before_footer'),
+        push_prompt_title=get_setting('push_prompt_title'),
+        push_prompt_message=get_setting('push_prompt_message')
     )
 
 @app.route('/post/<slug>')
