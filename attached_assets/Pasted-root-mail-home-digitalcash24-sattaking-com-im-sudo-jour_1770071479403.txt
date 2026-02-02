@@ -1,0 +1,33 @@
+root@mail:/home/digitalcash24/sattaking.com.im# sudo journalctl -u sattaking -n 30 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Mon 2026-02-02 23:31:12 CET. --
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Daily post scheduler running (checks every minute)
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:50 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(1) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:51 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(4) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:52 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(7) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:53 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(10) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:54 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(13) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:55 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(16) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Running daily post creation at 03:56 IST
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: Error creating daily posts: duplicate key value violates unique constraint "posts_pkey"
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096454]: DETAIL:  Key (id)=(19) already exists.
+Feb 02 23:27:19 mail.digitalcash24.com gunicorn[2096443]: [2026-02-02 23:27:19 +0100] [2096443] [INFO] Shutting down: Master
+Feb 02 23:27:19 mail.digitalcash24.com systemd[1]: sattaking.service: Succeeded.
+Feb 02 23:27:19 mail.digitalcash24.com systemd[1]: Stopped Satta King Flask Application.
+Feb 02 23:27:19 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 02 23:27:20 mail.digitalcash24.com gunicorn[2100455]: [2026-02-02 23:27:20 +0100] [2100455] [INFO] Starting gunicorn 23.0.0
+Feb 02 23:27:20 mail.digitalcash24.com gunicorn[2100455]: [2026-02-02 23:27:20 +0100] [2100455] [INFO] Listening at: http://0.0.0.0:8001 (2100455)
+Feb 02 23:27:20 mail.digitalcash24.com gunicorn[2100455]: [2026-02-02 23:27:20 +0100] [2100455] [INFO] Using worker: sync
+Feb 02 23:27:20 mail.digitalcash24.com gunicorn[2100472]: [2026-02-02 23:27:20 +0100] [2100472] [INFO] Booting worker with pid: 2100472
+root@mail:/home/digitalcash24/sattaking.com.im# 
