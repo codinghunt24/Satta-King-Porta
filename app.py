@@ -610,43 +610,44 @@ def chart():
     
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT DISTINCT name FROM games ORDER BY name")
-            all_games = [r['name'] for r in cursor.fetchall()]
-            
-            if not all_games:
-                cursor.execute("SELECT DISTINCT game_name FROM satta_results ORDER BY game_name")
-                all_games = [r['game_name'] for r in cursor.fetchall()]
-            
-            if not game_name and all_games:
-                game_name = all_games[0]
-            
-            cursor.execute("""
-                SELECT DISTINCT YEAR(result_date) as year 
-                FROM satta_results ORDER BY year DESC
-            """)
-            available_years = [r['year'] for r in cursor.fetchall()]
-            
-            if not available_years:
-                current_year = datetime.now().year
-                available_years = [current_year, current_year - 1, current_year - 2]
-            
-            results = []
-            result_map = {}
-            if game_name:
-                cursor.execute("""
-                    SELECT result_date, result, result_time 
-                    FROM satta_results 
-                    WHERE game_name = %s 
-                    AND MONTH(result_date) = %s 
-                    AND YEAR(result_date) = %s
-                    ORDER BY result_date DESC
-                """, (game_name, selected_month, selected_year))
-                results = cursor.fetchall()
-                
-                for r in results:
-                    result_map[str(r['result_date'])] = r['result']
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT DISTINCT name FROM games ORDER BY name")
+        all_games = [r['name'] for r in cursor.fetchall()]
         
+        if not all_games:
+            cursor.execute("SELECT DISTINCT game_name FROM satta_results ORDER BY game_name")
+            all_games = [r['game_name'] for r in cursor.fetchall()]
+        
+        if not game_name and all_games:
+            game_name = all_games[0]
+        
+        cursor.execute("""
+            SELECT DISTINCT EXTRACT(YEAR FROM result_date)::int as year 
+            FROM satta_results ORDER BY year DESC
+        """)
+        available_years = [r['year'] for r in cursor.fetchall()]
+        
+        if not available_years:
+            current_year = datetime.now().year
+            available_years = [current_year, current_year - 1, current_year - 2]
+        
+        results = []
+        result_map = {}
+        if game_name:
+            cursor.execute("""
+                SELECT result_date, result, result_time 
+                FROM satta_results 
+                WHERE game_name = %s 
+                AND EXTRACT(MONTH FROM result_date) = %s 
+                AND EXTRACT(YEAR FROM result_date) = %s
+                ORDER BY result_date DESC
+            """, (game_name, selected_month, selected_year))
+            results = cursor.fetchall()
+            
+            for r in results:
+                result_map[str(r['result_date'])] = r['result']
+        
+        cursor.close()
         conn.close()
         
         import calendar
@@ -654,6 +655,15 @@ def chart():
         month_name = calendar.month_name[selected_month]
         
         months = {i: calendar.month_name[i] for i in range(1, 13)}
+        
+        day_names = {}
+        for day in range(1, days_in_month + 1):
+            date_str = f"{selected_year:04d}-{selected_month:02d}-{day:02d}"
+            try:
+                dt = datetime.strptime(date_str, '%Y-%m-%d')
+                day_names[date_str] = dt.strftime('%a')
+            except:
+                day_names[date_str] = '--'
         
         odd_count = sum(1 for r in results if r['result'] and r['result'] != '--' and int(r['result']) % 2 != 0)
         even_count = len([r for r in results if r['result'] and r['result'] != '--']) - odd_count
@@ -672,6 +682,7 @@ def chart():
             available_years=available_years,
             results=results,
             result_map=result_map,
+            day_names=day_names,
             days_in_month=days_in_month,
             month_name=month_name,
             months=months,

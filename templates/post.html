@@ -214,7 +214,7 @@
                 {% for r in weekly_results %}
                 <tr>
                     <td>{{ r.result_date }}</td>
-                    <td>{{ r.result_date.strftime('%A') if r.result_date.strftime else '--' }}</td>
+                    <td>--</td>
                     <td style="font-weight: bold; color: #10b981;">{{ r.result or '--' }}</td>
                     <td>{% if r.result and r.result != '--' %}{% if r.result|int % 2 == 0 %}Even{% else %}Odd{% endif %}{% else %}--{% endif %}</td>
                 </tr>
