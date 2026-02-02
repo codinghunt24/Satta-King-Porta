@@ -1,0 +1,36 @@
+● sattaking.service - Satta King Flask Application
+     Loaded: loaded (/etc/systemd/system/sattaking.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2026-02-02 21:37:19 CET; 49s ago
+   Main PID: 2044054 (gunicorn)
+      Tasks: 7 (limit: 9493)
+     Memory: 107.5M
+     CGroup: /system.slice/sattaking.service
+             ├─2044054 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 3 --reuse-port app>
+             ├─2044070 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 3 --reuse-port app>
+             ├─2044071 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 3 --reuse-port app>
+             └─2044079 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 3 --reuse-port app>
+
+Feb 02 21:37:19 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044054]: [2026-02-02 21:37:20 +0100] [2044054] [INFO] Starting gunicorn 23.0.0
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044054]: [2026-02-02 21:37:20 +0100] [2044054] [INFO] Listening at: http://0.0.0.0:8001 (2044054)
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044054]: [2026-02-02 21:37:20 +0100] [2044054] [INFO] Using worker: sync
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044070]: [2026-02-02 21:37:20 +0100] [2044070] [INFO] Booting worker with pid: 2044070
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044071]: [2026-02-02 21:37:20 +0100] [2044071] [INFO] Booting worker with pid: 2044071
+Feb 02 21:37:20 mail.digitalcash24.com gunicorn[2044079]: [2026-02-02 21:37:20 +0100] [2044079] [INFO] Booting worker with pid: 2044079
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+Log file is already in use  (press RETURN)
