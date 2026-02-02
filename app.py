@@ -743,18 +743,39 @@ def daily_updates():
 @app.route('/news')
 def news():
     try:
+        page = request.args.get('page', 1, type=int)
+        per_page = 10
+        offset = (page - 1) * per_page
+        
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT slug, title, meta_description, created_at, views 
-                FROM news_posts WHERE status = 'published' 
-                ORDER BY created_at DESC
-            """)
-            news_list = cursor.fetchall()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT COUNT(*) as total FROM news_posts WHERE status = 'published'")
+        total_row = cursor.fetchone()
+        total = total_row['total'] if total_row else 0
+        total_pages = (total + per_page - 1) // per_page if total > 0 else 1
+        
+        cursor.execute("""
+            SELECT slug, title, excerpt, meta_description, featured_image, created_at, views 
+            FROM news_posts WHERE status = 'published' 
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+        """, (per_page, offset))
+        news_list = cursor.fetchall()
+        
+        cursor.execute("""
+            SELECT slug, title FROM news_posts WHERE status = 'published' 
+            ORDER BY views DESC LIMIT 5
+        """)
+        popular_news = cursor.fetchall()
+        cursor.close()
         conn.close()
         
         return render_template('news.html',
             news_list=news_list,
+            popular_news=popular_news,
+            current_page=page,
+            total_pages=total_pages,
+            total_news=total,
             adsense_auto_ads=get_setting('adsense_auto_ads')
         )
     except Exception as e:
@@ -765,20 +786,30 @@ def news():
 def news_post(slug):
     try:
         conn = get_db()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM news_posts WHERE slug = %s AND status = 'published'", (slug,))
-            news_data = cursor.fetchone()
-            
-            if not news_data:
-                conn.close()
-                return "News not found", 404
-            
-            cursor.execute("UPDATE news_posts SET views = views + 1 WHERE id = %s", (news_data['id'],))
-            conn.commit()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM news_posts WHERE slug = %s AND status = 'published'", (slug,))
+        news_data = cursor.fetchone()
+        
+        if not news_data:
+            cursor.close()
+            conn.close()
+            return "News not found", 404
+        
+        cursor.execute("UPDATE news_posts SET views = views + 1 WHERE id = %s", (news_data['id'],))
+        conn.commit()
+        
+        cursor.execute("""
+            SELECT slug, title FROM news_posts 
+            WHERE status = 'published' AND id != %s 
+            ORDER BY created_at DESC LIMIT 5
+        """, (news_data['id'],))
+        related_news = cursor.fetchall()
+        cursor.close()
         conn.close()
         
         return render_template('news_post.html',
             news=news_data,
+            related_news=related_news,
             adsense_auto_ads=get_setting('adsense_auto_ads')
         )
     except Exception as e:
@@ -1008,6 +1039,57 @@ def admin_set_interval():
     except:
         pass
     return redirect(url_for('admin_dashboard', page='auto-scrape'))
+
+@app.route('/admin/add-news', methods=['POST'])
+@login_required
+def admin_add_news():
+    import re
+    title = request.form.get('title', '').strip()
+    slug = request.form.get('slug', '').strip()
+    excerpt = request.form.get('excerpt', '').strip()
+    content = request.form.get('content', '').strip()
+    featured_image = request.form.get('featured_image', '').strip()
+    meta_title = request.form.get('meta_title', '').strip()
+    meta_description = request.form.get('meta_description', '').strip()
+    meta_keywords = request.form.get('meta_keywords', '').strip()
+    status = request.form.get('status', 'published')
+    
+    if not title or not content:
+        return redirect(url_for('admin_dashboard', page='news'))
+    
+    if not slug:
+        slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("""
+            INSERT INTO news_posts (title, slug, excerpt, content, featured_image, 
+                meta_title, meta_description, meta_keywords, status, views, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 0, NOW(), NOW())
+        """, (title, slug, excerpt, content, featured_image, meta_title, meta_description, meta_keywords, status))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding news: {e}")
+    return redirect(url_for('admin_dashboard', page='news'))
+
+@app.route('/admin/delete-news', methods=['POST'])
+@login_required
+def admin_delete_news():
+    news_id = request.form.get('news_id')
+    if news_id:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            cursor.execute("DELETE FROM news_posts WHERE id = %s", (news_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error deleting news: {e}")
+    return redirect(url_for('admin_dashboard', page='news'))
 
 @app.route('/admin/logout')
 def admin_logout():
