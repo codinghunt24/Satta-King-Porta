@@ -1,0 +1,16 @@
+[Unit]
+Description=Satta King Gunicorn Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/digitalcash24/sattaking.com.im
+Environment="PATH=/home/digitalcash24/sattaking.com.im/venv/bin"
+EnvironmentFile=/home/digitalcash24/sattaking.com.im/.env
+ExecStart=/home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 --timeout 120 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
