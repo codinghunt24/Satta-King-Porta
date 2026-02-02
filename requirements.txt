@@ -5,3 +5,5 @@ flask
 psycopg2-binary
 pymysql
 python-dotenv
+py-vapid
+pywebpush
