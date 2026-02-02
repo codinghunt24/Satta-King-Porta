@@ -1,0 +1,25 @@
+ALTER TABLE
+root@mail:/home/digitalcash24/sattaking.com.im# sudo systemctl restart sattaking
+root@mail:/home/digitalcash24/sattaking.com.im# sudo journalctl -u sattaking -n 20 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Tue 2026-02-03 00:04:10 CET. --
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: Database error: invalid input syntax for type date: "%s"
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: LINE 6:                 WHERE sr.result_date IN ('%s', '%s')
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]:                                                  ^
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: Database error: invalid input syntax for type date: "%s"
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: LINE 6:                 WHERE sr.result_date IN ('%s', '%s')
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]:                                                  ^
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: Database error: invalid input syntax for type date: "%s"
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]: LINE 6:                 WHERE sr.result_date IN ('%s', '%s')
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116338]:                                                  ^
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116307]: [2026-02-03 00:04:03 +0100] [2116307] [INFO] Handling signal: term
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116307]: [2026-02-03 00:04:03 +0100] [2116307] [INFO] Shutting down: Master
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116307]: Auto-scrape scheduled every 5 minutes
+Feb 03 00:04:03 mail.digitalcash24.com gunicorn[2116307]: Daily post scheduler running (checks every minute)
+Feb 03 00:04:03 mail.digitalcash24.com systemd[1]: sattaking.service: Succeeded.
+Feb 03 00:04:03 mail.digitalcash24.com systemd[1]: Stopped Satta King Flask Application.
+Feb 03 00:04:03 mail.digitalcash24.com systemd[1]: Started Satta King Flask Application.
+Feb 03 00:04:04 mail.digitalcash24.com gunicorn[2119221]: [2026-02-03 00:04:04 +0100] [2119221] [INFO] Starting gunicorn 23.0.0
+Feb 03 00:04:04 mail.digitalcash24.com gunicorn[2119221]: [2026-02-03 00:04:04 +0100] [2119221] [INFO] Listening at: http://0.0.0.0:8001 (2119221)
+Feb 03 00:04:04 mail.digitalcash24.com gunicorn[2119221]: [2026-02-03 00:04:04 +0100] [2119221] [INFO] Using worker: sync
+Feb 03 00:04:04 mail.digitalcash24.com gunicorn[2119251]: [2026-02-03 00:04:04 +0100] [2119251] [INFO] Booting worker with pid: 2119251
+root@mail:/home/digitalcash24/sattaking.com.im# 
