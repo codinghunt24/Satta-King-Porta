@@ -623,9 +623,9 @@ def index():
                        sr.result_time, g.time_slot, g.display_order
                 FROM satta_results sr 
                 INNER JOIN games g ON g.name = sr.game_name
-                WHERE sr.result_date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                WHERE sr.result_date IN (%s, %s)
                 ORDER BY g.display_order ASC, sr.game_name ASC
-            """)
+            """, (today, yesterday))
         all_results = cursor.fetchall()
         
         if USE_MYSQL:
@@ -636,12 +636,13 @@ def index():
                 ORDER BY result_date DESC, game_name
             """)
         else:
+            seven_days_ago = (datetime.now(IST) - timedelta(days=7)).strftime('%Y-%m-%d')
             cursor.execute("""
                 SELECT result_date, game_name, result 
                 FROM satta_results 
-                WHERE result_date >= CURRENT_DATE - INTERVAL '7 days'
+                WHERE result_date >= %s
                 ORDER BY result_date DESC, game_name
-            """)
+            """, (seven_days_ago,))
         chart_data = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -1380,10 +1381,11 @@ def admin_dashboard():
         row = cursor.fetchone()
         total_games = row['cnt'] if row else 0
         
+        today_ist = datetime.now(IST).strftime('%Y-%m-%d')
         if USE_MYSQL:
             cursor.execute("SELECT COUNT(*) as cnt FROM satta_results WHERE result_date = CURDATE()")
         else:
-            cursor.execute("SELECT COUNT(*) as cnt FROM satta_results WHERE result_date = CURRENT_DATE")
+            cursor.execute("SELECT COUNT(*) as cnt FROM satta_results WHERE result_date = %s", (today_ist,))
         row = cursor.fetchone()
         today_results = row['cnt'] if row else 0
         
