@@ -549,12 +549,15 @@ def index():
         last_update_formatted=last_update_formatted,
         current_date=datetime.now().strftime('%d %B %Y'),
         adsense_auto_ads=get_setting('adsense_auto_ads'),
+        adsense_verification=get_setting('adsense_verification'),
         analytics_code=get_setting('google_analytics_code'),
         google_verify=get_setting('meta_verification_google'),
         bing_verify=get_setting('meta_verification_bing'),
-        header_ad=display_ad('header_ad'),
-        after_result_ad=display_ad('after_result'),
-        footer_ad=display_ad('footer_ad')
+        header_ad=display_ad('header_banner'),
+        below_title_ad=display_ad('below_title'),
+        in_content_1_ad=display_ad('in_content_1'),
+        in_content_2_ad=display_ad('in_content_2'),
+        before_footer_ad=display_ad('before_footer')
     )
 
 @app.route('/post/<slug>')
@@ -1014,7 +1017,8 @@ def admin_dashboard():
         site_pages = cursor.fetchall()
         
         cursor.execute("SELECT * FROM ad_placements ORDER BY placement_name")
-        ad_placements = cursor.fetchall()
+        ad_placements_list = cursor.fetchall()
+        ad_placements = {p['placement_name']: p for p in ad_placements_list} if ad_placements_list else {}
         
         cursor.execute("SELECT * FROM scrape_schedule ORDER BY schedule_time")
         scrape_schedules = cursor.fetchall()
@@ -1037,6 +1041,9 @@ def admin_dashboard():
             last_auto_scrape=get_setting('last_auto_scrape'),
             adsense_publisher_id=get_setting('adsense_publisher_id'),
             adsense_auto_ads=get_setting('adsense_auto_ads'),
+            adsense_verification=get_setting('adsense_verification'),
+            google_analytics_code=get_setting('google_analytics_code'),
+            ads_txt_content=get_setting('ads_txt_content'),
             auto_publish_enabled=get_setting('auto_publish_enabled', '1'),
             auto_publish_hour=get_setting('auto_publish_hour', '1'),
             india_time=datetime.now(IST).strftime('%d %b %Y, %I:%M:%S %p IST'),
@@ -1072,6 +1079,66 @@ def admin_save_daily_post_settings():
 def admin_create_daily_posts_now():
     count = create_daily_posts_for_all_games()
     return redirect(url_for('admin_dashboard', page='daily-posts'))
+
+@app.route('/admin/save-adsense-verification', methods=['POST'])
+@login_required
+def admin_save_adsense_verification():
+    verification = request.form.get('adsense_verification', '').strip()
+    set_setting('adsense_verification', verification)
+    return redirect(url_for('admin_dashboard', page='ads'))
+
+@app.route('/admin/save-analytics', methods=['POST'])
+@login_required
+def admin_save_analytics():
+    code = request.form.get('google_analytics_code', '').strip()
+    set_setting('google_analytics_code', code)
+    return redirect(url_for('admin_dashboard', page='ads'))
+
+@app.route('/admin/save-auto-ads', methods=['POST'])
+@login_required
+def admin_save_auto_ads():
+    auto_ads = request.form.get('adsense_auto_ads', '').strip()
+    publisher_id = request.form.get('adsense_publisher_id', '').strip()
+    set_setting('adsense_auto_ads', auto_ads)
+    set_setting('adsense_publisher_id', publisher_id)
+    return redirect(url_for('admin_dashboard', page='ads'))
+
+@app.route('/admin/save-ads-txt', methods=['POST'])
+@login_required
+def admin_save_ads_txt():
+    content = request.form.get('ads_txt_content', '').strip()
+    set_setting('ads_txt_content', content)
+    return redirect(url_for('admin_dashboard', page='ads'))
+
+@app.route('/admin/save-ad-placement', methods=['POST'])
+@login_required
+def admin_save_ad_placement():
+    placement_name = request.form.get('placement_name', '').strip()
+    ad_code = request.form.get('ad_code', '').strip()
+    is_active = 1 if request.form.get('is_active') else 0
+    
+    if placement_name:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            if USE_MYSQL:
+                cursor.execute("""
+                    INSERT INTO ad_placements (placement_name, ad_code, is_active)
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE ad_code = VALUES(ad_code), is_active = VALUES(is_active)
+                """, (placement_name, ad_code, is_active))
+            else:
+                cursor.execute("""
+                    INSERT INTO ad_placements (placement_name, ad_code, is_active)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (placement_name) DO UPDATE SET ad_code = EXCLUDED.ad_code, is_active = EXCLUDED.is_active
+                """, (placement_name, ad_code, is_active))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error saving ad placement: {e}")
+    return redirect(url_for('admin_dashboard', page='ads'))
 
 @app.route('/admin/add-source', methods=['POST'])
 @login_required

@@ -9,6 +9,7 @@
     <meta name="robots" content="index, follow">
     {% if google_verify %}<meta name="google-site-verification" content="{{ google_verify }}">{% endif %}
     {% if bing_verify %}<meta name="msvalidate.01" content="{{ bing_verify }}">{% endif %}
+    {% if adsense_verification %}{{ adsense_verification|safe }}{% endif %}
     <meta property="og:title" content="{% block og_title %}Satta King | Satta King 786{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Get fastest Satta King results{% endblock %}">
     <meta property="og:type" content="website">

@@ -12,7 +12,9 @@
     <p>Welcome to <strong>Satta King</strong> - your trusted source for <strong>Satta King Fast</strong> live results. Get instant updates for <strong>Delhi Satta King</strong>, <strong>Satta King Disawar</strong>, <strong>Shri Ganesh Satta King</strong>, and <strong>Delhi Bazar Satta King</strong> results. Check our <strong>Satta King Chart</strong> for <strong>Satta King Gali Disawar</strong> historical records.</p>
 </section>
 
-{{ header_ad|safe }}
+{% if header_ad %}
+<div class="ad-container header-ad">{{ header_ad|safe }}</div>
+{% endif %}
 
 <section class="results-section" id="results">
     <h3 class="section-title">Satta King Results - Delhi Satta King Today</h3>
@@ -53,7 +55,9 @@
         <button class="refresh-btn" onclick="location.reload()">Refresh Satta King Results</button>
     </div>
     
-    {{ after_result_ad|safe }}
+    {% if in_content_1_ad %}
+    <div class="ad-container in-content-ad">{{ in_content_1_ad|safe }}</div>
+    {% endif %}
 </section>
 
 <section class="chart-section" id="chart">
@@ -110,5 +114,7 @@
     <p><strong>Disclaimer:</strong> This website is for informational purposes only. We do not promote or encourage any form of gambling or betting. Please check your local laws before participating in any games.</p>
 </div>
 
-{{ footer_ad|safe }}
+{% if before_footer_ad %}
+<div class="ad-container before-footer-ad">{{ before_footer_ad|safe }}</div>
+{% endif %}
 {% endblock %}
