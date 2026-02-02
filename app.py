@@ -1091,6 +1091,91 @@ def admin_delete_news():
             print(f"Error deleting news: {e}")
     return redirect(url_for('admin_dashboard', page='news'))
 
+@app.route('/admin/page/add', methods=['POST'])
+@login_required
+def admin_add_page():
+    import re
+    title = request.form.get('title', '').strip()
+    slug = request.form.get('slug', '').strip()
+    content = request.form.get('content', '').strip()
+    meta_title = request.form.get('meta_title', '').strip()
+    meta_description = request.form.get('meta_description', '').strip()
+    is_published = 1 if request.form.get('is_published') else 0
+    
+    if not title or not content:
+        return redirect(url_for('admin_dashboard', page='pages'))
+    
+    if not slug:
+        slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("""
+            INSERT INTO site_pages (title, slug, content, meta_title, meta_description, is_published, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+        """, (title, slug, content, meta_title, meta_description, is_published))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding page: {e}")
+    return redirect(url_for('admin_dashboard', page='pages'))
+
+@app.route('/admin/page/edit/<int:page_id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_page(page_id):
+    conn = get_db()
+    cursor = get_cursor(conn)
+    
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        slug = request.form.get('slug', '').strip()
+        content = request.form.get('content', '').strip()
+        meta_title = request.form.get('meta_title', '').strip()
+        meta_description = request.form.get('meta_description', '').strip()
+        is_published = 1 if request.form.get('is_published') else 0
+        
+        try:
+            cursor.execute("""
+                UPDATE site_pages 
+                SET title = %s, slug = %s, content = %s, meta_title = %s, 
+                    meta_description = %s, is_published = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (title, slug, content, meta_title, meta_description, is_published, page_id))
+            conn.commit()
+        except Exception as e:
+            print(f"Error updating page: {e}")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin_dashboard', page='pages'))
+    
+    cursor.execute("SELECT * FROM site_pages WHERE id = %s", (page_id,))
+    page_data = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    if not page_data:
+        return redirect(url_for('admin_dashboard', page='pages'))
+    
+    return render_template('admin_edit_page.html', page_data=page_data)
+
+@app.route('/admin/page/delete', methods=['POST'])
+@login_required
+def admin_delete_page():
+    page_id = request.form.get('page_id')
+    if page_id:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            cursor.execute("DELETE FROM site_pages WHERE id = %s", (page_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error deleting page: {e}")
+    return redirect(url_for('admin_dashboard', page='pages'))
+
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_logged_in', None)

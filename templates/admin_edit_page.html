@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Page - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #0f172a; 
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 { color: #FFD700; }
+        .back-btn {
+            background: #374151;
+            color: #e2e8f0;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        .back-btn:hover { background: #4b5563; }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+        .form-group textarea { resize: vertical; }
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #334155;
+            border-bottom: none;
+        }
+        .editor-toolbar button {
+            padding: 8px 12px;
+            background: #374151;
+            border: none;
+            border-radius: 4px;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .editor-toolbar button:hover { background: #4b5563; }
+        #contentEditor {
+            border-radius: 0 0 8px 8px !important;
+            border-top: none !important;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #FFD700;
+            color: #1a1a2e;
+        }
+        .btn-primary:hover { background: #e6c200; }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            margin-left: 10px;
+        }
+        .btn-danger:hover { background: #dc2626; }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        small {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Edit Page: {{ page_data.title }}</h1>
+            <a href="/admin/dashboard?page=pages" class="back-btn">Back to Pages</a>
+        </div>
+        
+        <div class="card">
+            <form action="/admin/page/edit/{{ page_data.id }}" method="POST">
+                <div class="form-group">
+                    <label>Page Title</label>
+                    <input type="text" name="title" value="{{ page_data.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>URL Slug</label>
+                    <input type="text" name="slug" value="{{ page_data.slug }}" required>
+                    <small>Accessible at: /page/{{ page_data.slug }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Meta Title (SEO)</label>
+                    <input type="text" name="meta_title" value="{{ page_data.meta_title or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Meta Description (SEO)</label>
+                    <textarea name="meta_description" rows="2">{{ page_data.meta_description or '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Content (HTML allowed)</label>
+                    <div class="editor-toolbar">
+                        <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
+                        <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
+                        <button type="button" onclick="formatText('h2')" title="Heading 2">H2</button>
+                        <button type="button" onclick="formatText('h3')" title="Heading 3">H3</button>
+                        <button type="button" onclick="formatText('ul')" title="Bullet List">• List</button>
+                        <button type="button" onclick="formatText('ol')" title="Numbered List">1. List</button>
+                        <button type="button" onclick="formatText('link')" title="Link">Link</button>
+                    </div>
+                    <textarea name="content" id="contentEditor" rows="25" required>{{ page_data.content }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="is_published" value="1" id="is_published" {% if page_data.is_published %}checked{% endif %}>
+                        <label for="is_published" style="margin-bottom: 0;">Published</label>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card" style="background: #1e1e2e; border: 1px solid #ef4444;">
+            <h3 style="color: #ef4444; margin-bottom: 15px;">Danger Zone</h3>
+            <form action="/admin/page/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this page?');" style="display: inline;">
+                <input type="hidden" name="page_id" value="{{ page_data.id }}">
+                <button type="submit" class="btn btn-danger">Delete This Page</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+    function formatText(type) {
+        const editor = document.getElementById('contentEditor');
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selectedText = editor.value.substring(start, end) || 'text';
+        let newText = '';
+        
+        switch(type) {
+            case 'bold': newText = `<strong>${selectedText}</strong>`; break;
+            case 'italic': newText = `<em>${selectedText}</em>`; break;
+            case 'h2': newText = `<h2>${selectedText}</h2>`; break;
+            case 'h3': newText = `<h3>${selectedText}</h3>`; break;
+            case 'ul': newText = `<ul>\n  <li>${selectedText}</li>\n  <li>item 2</li>\n</ul>`; break;
+            case 'ol': newText = `<ol>\n  <li>${selectedText}</li>\n  <li>item 2</li>\n</ol>`; break;
+            case 'link':
+                const url = prompt('Enter URL:', 'https://');
+                if(url) newText = `<a href="${url}">${selectedText}</a>`;
+                else return;
+                break;
+        }
+        
+        editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+        editor.focus();
+        editor.selectionStart = start;
+        editor.selectionEnd = start + newText.length;
+    }
+    </script>
+</body>
+</html>

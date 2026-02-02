@@ -377,6 +377,117 @@
             }
             </script>
             
+            {% elif page == 'pages' %}
+            <h1 style="margin-bottom: 30px;">Footer Pages Management</h1>
+            <p style="color: #9ca3af; margin-bottom: 20px;">Manage footer pages (About, Contact, Disclaimer, Privacy Policy, Terms). These pages are important for AdSense approval.</p>
+            
+            <div class="card" style="margin-bottom: 30px;">
+                <h3 class="card-title">All Pages ({{ site_pages|length if site_pages else 0 }})</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if site_pages %}
+                        {% for pg in site_pages %}
+                        <tr>
+                            <td><a href="/page/{{ pg.slug }}" target="_blank" style="color: #60a5fa;">{{ pg.title }}</a></td>
+                            <td style="color: #9ca3af;">/page/{{ pg.slug }}</td>
+                            <td>{% if pg.is_published %}<span style="color: #10b981;">Published</span>{% else %}<span style="color: #f59e0b;">Draft</span>{% endif %}</td>
+                            <td style="color: #9ca3af;">{{ pg.updated_at.strftime('%Y-%m-%d') if pg.updated_at else 'N/A' }}</td>
+                            <td>
+                                <a href="/admin/page/edit/{{ pg.id }}" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.85rem;">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="color: #9ca3af;">No pages found.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Add New Page</h3>
+                <form action="/admin/page/add" method="POST">
+                    <div class="form-group">
+                        <label>Page Title</label>
+                        <input type="text" name="title" placeholder="e.g., About Us" required>
+                    </div>
+                    <div class="form-group">
+                        <label>URL Slug</label>
+                        <input type="text" name="slug" placeholder="e.g., about-us" required>
+                        <small style="color: #9ca3af;">Will be accessible at /page/your-slug</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Meta Title (SEO)</label>
+                        <input type="text" name="meta_title" placeholder="Page Title - Satta King">
+                    </div>
+                    <div class="form-group">
+                        <label>Meta Description (SEO)</label>
+                        <textarea name="meta_description" rows="2" placeholder="Brief description for search engines (150-160 chars)"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Content (HTML allowed)</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatPageText('bold')" title="Bold"><b>B</b></button>
+                            <button type="button" onclick="formatPageText('italic')" title="Italic"><i>I</i></button>
+                            <button type="button" onclick="formatPageText('h1')" title="Heading 1">H1</button>
+                            <button type="button" onclick="formatPageText('h2')" title="Heading 2">H2</button>
+                            <button type="button" onclick="formatPageText('h3')" title="Heading 3">H3</button>
+                            <button type="button" onclick="formatPageText('ul')" title="Bullet List">• List</button>
+                            <button type="button" onclick="formatPageText('ol')" title="Numbered List">1. List</button>
+                            <button type="button" onclick="formatPageText('link')" title="Link">Link</button>
+                        </div>
+                        <textarea name="content" id="pageContentEditor" rows="15" placeholder="Write your page content here..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="is_published" value="1" checked> Publish immediately
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Page</button>
+                </form>
+            </div>
+            
+            <script>
+            function formatPageText(type) {
+                const editor = document.getElementById('pageContentEditor');
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const selectedText = editor.value.substring(start, end) || 'text';
+                let newText = '';
+                
+                switch(type) {
+                    case 'bold': newText = `<strong>${selectedText}</strong>`; break;
+                    case 'italic': newText = `<em>${selectedText}</em>`; break;
+                    case 'h1': newText = `<h2>${selectedText}</h2>`; break;
+                    case 'h2': newText = `<h3>${selectedText}</h3>`; break;
+                    case 'h3': newText = `<h4>${selectedText}</h4>`; break;
+                    case 'ul': newText = `<ul>\n  <li>${selectedText}</li>\n  <li>item 2</li>\n</ul>`; break;
+                    case 'ol': newText = `<ol>\n  <li>${selectedText}</li>\n  <li>item 2</li>\n</ol>`; break;
+                    case 'link':
+                        const url = prompt('Enter URL:', 'https://');
+                        if(url) newText = `<a href="${url}">${selectedText}</a>`;
+                        else return;
+                        break;
+                }
+                
+                editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+                editor.focus();
+                editor.selectionStart = start;
+                editor.selectionEnd = start + newText.length;
+            }
+            </script>
+            
             {% else %}
             <div class="card">
                 <h3 class="card-title">{{ page|title }}</h3>
