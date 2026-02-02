@@ -1,0 +1,155 @@
+nv) root@mail:/home/digitalcash24/sattaking.com.im# ls /etc/nginx/conf.d/domains/
+002-api.codinghunt.in.conf         004-codinghunt.in.conf            004-instapaisa.net.conf        004-sarkariresult.com.kg.conf
+002-mail.digitalcash24.com.conf    004-cricbuzz-live-score.com.conf  004-jj-communication.com.conf  004-sattaking.com.im.conf
+002-server.digitalcash24.com.conf  004-digitalcash24.com.conf        004-lodhasamaj.in.conf         004-zestmony.com.conf
+(venv) root@mail:/home/digitalcash24/sattaking.com.im# cat /etc/nginx/conf.d/domains/*sattaking*
+server {
+    listen [::]:80;
+    server_name ~^(.*)\.sattaking\.com\.im$;
+
+    set $http_redirect 0;
+    if ($host ~ "^(zeslecp|webmail)\.") {
+        set $http_redirect 1;
+    }
+
+    if ($request_uri ~ "/.well-known/acme-challenge") {
+        set $http_redirect 0;
+    }
+
+    if ($http_redirect) {
+        return 301 https://$host;
+    }
+
+    set $PROXY_TO_PORT 8080;
+
+    include conf.d/includes-optional/zesle-proxy-http.conf;
+    include conf.d/static-locations/zesle-static-locations.conf;
+    include conf.d/server-includes/*.conf;
+}
+
+server {
+    listen [::]:443 ssl http2;
+    server_name ~^(.*)\.sattaking\.com\.im$;
+
+    ssl_certificate /var/zesle/ssl/letsencrypt/sattaking.com.im/fullchain.pem;
+    ssl_certificate_key /var/zesle/ssl/letsencrypt/sattaking.com.im/privkey.pem;
+
+    include conf.d/includes-optional/zesle-proxy-https.conf;
+
+    location /terminal-ws {
+        proxy_ssl_server_name on;
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:2086$request_uri;
+    }
+}
+
+server {
+    listen [::]:80;
+    server_name webmail.sattaking.com.im zeslecp.sattaking.com.im www.sattaking.com.im sattaking.com.im;
+
+    set $http_redirect 0;
+    if ($host ~ "^(zeslecp|webmail)\.") {
+        set $http_redirect 1;
+    }
+
+    if ($request_uri ~ "/.well-known/acme-challenge") {
+        set $http_redirect 0;
+    }
+
+    if ($http_redirect) {
+        return 301 https://$host;
+    }
+
+    set $PROXY_TO_PORT 8080;
+
+    include conf.d/includes-optional/zesle-proxy-http.conf;
+    include conf.d/static-locations/zesle-static-locations.conf;
+    include conf.d/server-includes/*.conf;
+}
+
+server {
+    listen [::]:443 ssl http2;
+    server_name webmail.sattaking.com.im zeslecp.sattaking.com.im www.sattaking.com.im sattaking.com.im;
+
+    ssl_certificate /var/zesle/ssl/letsencrypt/sattaking.com.im/fullchain.pem;
+    ssl_certificate_key /var/zesle/ssl/letsencrypt/sattaking.com.im/privkey.pem;
+
+    # Satta King URL Rewrites
+    location ~ ^/post/(.+)$ {
+        rewrite ^/post/(.+)$ /post.php?slug=$1 break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~ ^/chart/(.+)$ {
+        rewrite ^/chart/(.+)$ /chart.php?slug=$1 break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~ ^/news/(.+)$ {
+        rewrite ^/news/(.+)$ /news-post.php?slug=$1 break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /news {
+        rewrite ^ /news.php break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location ~ ^/page/(.+)$ {
+        rewrite ^/page/(.+)$ /page.php?slug=$1 break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /daily-updates {
+        rewrite ^ /daily-updates.php break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location = /sitemap.xml {
+        rewrite ^ /sitemap.php break;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    include conf.d/includes-optional/zesle-proxy-https.conf;
+
+    location /terminal-ws {
+        proxy_ssl_server_name on;
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:2086$request_uri;
+    }
+}
+(venv) root@mail:/home/digitalcash24/sattaking.com.im# 
