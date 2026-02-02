@@ -105,8 +105,46 @@
                 
                 <form method="post" action="/admin/add-source" style="margin-top: 20px;">
                     <div class="form-inline">
-                        <input type="url" name="url" placeholder="https://satta.ink/" required style="flex: 1; padding: 10px; background: #111827; border: 1px solid #374151; border-radius: 6px; color: #fff;">
+                        <input type="url" name="url" placeholder="https://satta-king-fast.com/" required style="flex: 1; padding: 10px; background: #111827; border: 1px solid #374151; border-radius: 6px; color: #fff;">
                         <button type="submit" class="btn btn-primary">Add Source</button>
+                    </div>
+                </form>
+                
+                <h4 style="color: #ffd700; margin: 30px 0 15px;">Daily Auto Scrape Scheduler</h4>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Set times when auto-scrape should run daily. Data will be fetched from satta-king-fast.com at these times.</p>
+                
+                <table style="margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th>Schedule Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in scrape_schedules %}
+                        <tr>
+                            <td>{{ schedule.schedule_time }}</td>
+                            <td>{% if schedule.is_active %}<span style="color: #10b981;">Active</span>{% else %}<span style="color: #ef4444;">Inactive</span>{% endif %}</td>
+                            <td>
+                                <form method="post" action="/admin/delete-schedule" style="display: inline;">
+                                    <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
+                                    <button type="submit" class="btn btn-sm" style="background: #ef4444; color: #fff;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="color: #9ca3af;">No schedules set. Add a time below.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <form method="post" action="/admin/add-schedule">
+                    <div class="form-inline">
+                        <input type="time" name="schedule_time" required style="padding: 10px; background: #111827; border: 1px solid #374151; border-radius: 6px; color: #fff;">
+                        <button type="submit" class="btn btn-primary">Add Schedule</button>
                     </div>
                 </form>
             </div>

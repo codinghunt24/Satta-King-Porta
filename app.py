@@ -157,14 +157,21 @@ class SattaScraper:
         today = datetime.now().strftime('%Y-%m-%d')
         yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         
-        pattern = r'<tr[^>]*class=[\'"][^\'"]*game-result[^\'"]*[\'"][^>]*>.*?<h3[^>]*class=[\'"][^\'"]*game-name[^\'"]*[\'"][^>]*>([^<]+)</h3>.*?<h3[^>]*class=[\'"][^\'"]*game-time[^\'"]*[\'"][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)</h3>.*?<td[^>]*class=[\'"][^\'"]*yesterday-number[^\'"]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)</h3>.*?<td[^>]*class=[\'"][^\'"]*today-number[^\'"]*[\'"][^>]*>.*?<h3>(\d{2}|--|-|XX)</h3>'
-        matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
+        game_rows = re.findall(r'<tr[^>]*class=["\'][^"\']*game-result[^"\']*["\'][^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
         
-        for match in matches:
-            game_name = match[0].strip()
-            time_str = match[1].strip()
-            yesterday_result = match[2].strip()
-            today_result = match[3].strip()
+        for row in game_rows:
+            game_name_match = re.search(r'<h3[^>]*class=["\']game-name["\'][^>]*>([^<]+)</h3>', row, re.IGNORECASE)
+            time_match = re.search(r'<h3[^>]*class=["\']game-time["\'][^>]*>\s*at\s*(\d{1,2}:\d{2}\s*[AP]M)</h3>', row, re.IGNORECASE)
+            yesterday_match = re.search(r'<td[^>]*class=["\']yesterday-number["\'][^>]*>.*?<h3>([^<]+)</h3>', row, re.DOTALL | re.IGNORECASE)
+            today_match = re.search(r'<td[^>]*class=["\']today-number["\'][^>]*>.*?<h3>([^<]+)</h3>', row, re.DOTALL | re.IGNORECASE)
+            
+            if not game_name_match or not time_match:
+                continue
+            
+            game_name = game_name_match.group(1).strip()
+            time_str = time_match.group(1).strip()
+            yesterday_result = yesterday_match.group(1).strip() if yesterday_match else '--'
+            today_result = today_match.group(1).strip() if today_match else '--'
             
             if not is_valid_game_name(game_name):
                 continue
@@ -193,6 +200,7 @@ class SattaScraper:
                     'result_date': today
                 })
         
+        print(f"Parsed {len(data)} game results from satta-king-fast.com")
         return data
     
     def scrape(self, url):
@@ -809,6 +817,9 @@ def admin_dashboard():
         cursor.execute("SELECT * FROM ad_placements ORDER BY placement_name")
         ad_placements = cursor.fetchall()
         
+        cursor.execute("SELECT * FROM scrape_schedule ORDER BY schedule_time")
+        scrape_schedules = cursor.fetchall()
+        
         cursor.close()
         conn.close()
         
@@ -820,6 +831,7 @@ def admin_dashboard():
             games=games,
             posts=posts,
             scrape_sources=scrape_sources,
+            scrape_schedules=scrape_schedules,
             news_posts=news_posts,
             site_pages=site_pages,
             ad_placements=ad_placements,
@@ -846,13 +858,45 @@ def admin_add_source():
     if url:
         try:
             conn = get_db()
-            with conn.cursor() as cursor:
-                cursor.execute("INSERT INTO scrape_sources (name, url, is_active) VALUES (%s, %s, 1)", 
-                             (url, url))
-                conn.commit()
+            cursor = get_cursor(conn)
+            cursor.execute("INSERT INTO scrape_sources (url, is_active) VALUES (%s, 1)", (url,))
+            conn.commit()
+            cursor.close()
             conn.close()
         except Exception as e:
             print(f"Error adding source: {e}")
+    return redirect(url_for('admin_dashboard', page='auto-scrape'))
+
+@app.route('/admin/add-schedule', methods=['POST'])
+@login_required
+def admin_add_schedule():
+    schedule_time = request.form.get('schedule_time', '').strip()
+    if schedule_time:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            cursor.execute("INSERT INTO scrape_schedule (schedule_time, is_active) VALUES (%s, 1)", (schedule_time,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error adding schedule: {e}")
+    return redirect(url_for('admin_dashboard', page='auto-scrape'))
+
+@app.route('/admin/delete-schedule', methods=['POST'])
+@login_required
+def admin_delete_schedule():
+    schedule_id = request.form.get('schedule_id')
+    if schedule_id:
+        try:
+            conn = get_db()
+            cursor = get_cursor(conn)
+            cursor.execute("DELETE FROM scrape_schedule WHERE id = %s", (schedule_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error deleting schedule: {e}")
     return redirect(url_for('admin_dashboard', page='auto-scrape'))
 
 @app.route('/admin/logout')
@@ -860,8 +904,28 @@ def admin_logout():
     session.pop('admin_logged_in', None)
     return redirect(url_for('admin_login'))
 
+def check_scheduled_scrape():
+    try:
+        now = datetime.now().strftime('%H:%M')
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT * FROM scrape_schedule WHERE is_active = 1")
+        schedules = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        for schedule in schedules:
+            schedule_time = str(schedule['schedule_time'])[:5]
+            if schedule_time == now:
+                print(f"Running scheduled scrape at {now}")
+                run_auto_scrape()
+                break
+    except Exception as e:
+        print(f"Schedule check error: {e}")
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=run_auto_scrape, trigger="interval", minutes=30)
+scheduler.add_job(func=check_scheduled_scrape, trigger="interval", minutes=1)
 scheduler.start()
 
 if __name__ == '__main__':
