@@ -602,6 +602,7 @@ def post(slug):
         print(f"Post error: {e}")
         return "Error loading post", 500
 
+@app.route('/chart.php')
 @app.route('/chart')
 def chart():
     game_name = request.args.get('game', '')
@@ -665,13 +666,13 @@ def chart():
             except:
                 day_names[date_str] = '--'
         
-        odd_count = sum(1 for r in results if r['result'] and r['result'] != '--' and int(r['result']) % 2 != 0)
-        even_count = len([r for r in results if r['result'] and r['result'] != '--']) - odd_count
+        valid_results = [r for r in results if r['result'] and r['result'] not in ['--', 'XX', 'Waiting', ''] and r['result'].isdigit()]
+        odd_count = sum(1 for r in valid_results if int(r['result']) % 2 != 0)
+        even_count = len(valid_results) - odd_count
         
         digit_freq = [0] * 10
-        for r in results:
-            if r['result'] and r['result'] != '--':
-                digit_freq[int(r['result']) % 10] += 1
+        for r in valid_results:
+            digit_freq[int(r['result']) % 10] += 1
         hot_digits = sorted(range(10), key=lambda x: digit_freq[x], reverse=True)[:3]
         
         return render_template('chart.html',
