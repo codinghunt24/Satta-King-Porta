@@ -1,20 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}{{ game_name }} Satta King Chart {{ month_name }} {{ selected_year }} | Record Chart{% endblock %}
-{% block description %}Check {{ game_name }} Satta King Chart for {{ month_name }} {{ selected_year }}. View complete monthly record and historical results.{% endblock %}
+{% block title %}{{ game_name }} Satta King Chart {{ month_name }} {{ selected_year }} - Monthly Record & History{% endblock %}
+{% block description %}{{ game_name }} Satta King Chart for {{ month_name }} {{ selected_year }}. Complete monthly record with daily results, statistics, hot/cold numbers analysis. View {{ game_name }} chart history and download records.{% endblock %}
+{% block keywords %}{{ game_name }} chart, {{ game_name }} satta king chart, {{ game_name }} record {{ selected_year }}, {{ game_name }} {{ month_name }} chart, satta king chart, {{ game_name }} monthly record{% endblock %}
 {% block canonical %}/chart?game={{ game_name|urlencode }}{% endblock %}
 
 {% block extra_head %}
+<meta property="og:title" content="{{ game_name }} Satta King Chart {{ month_name }} {{ selected_year }}">
+<meta property="og:description" content="Complete {{ game_name }} Satta King Chart for {{ month_name }} {{ selected_year }}. Daily results, statistics and analysis.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="/chart?game={{ game_name|urlencode }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ game_name }} Chart {{ month_name }} {{ selected_year }}">
+<meta name="twitter:description" content="{{ game_name }} Satta King monthly chart with complete records.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "{{ game_name }} Satta King Chart {{ month_name }} {{ selected_year }}",
+    "description": "Complete monthly record of {{ game_name }} Satta King results for {{ month_name }} {{ selected_year }} including daily results, statistics, and pattern analysis.",
+    "temporalCoverage": "{{ selected_year }}-{{ '%02d'|format(selected_month) }}",
+    "creator": {
+        "@type": "Organization",
+        "name": "Satta King"
+    }
+}
+</script>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "/"},
+        {"@type": "ListItem", "position": 2, "name": "Chart", "item": "/chart"},
+        {"@type": "ListItem", "position": 3, "name": "{{ game_name }} Chart", "item": "/chart?game={{ game_name|urlencode }}"}
+    ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What is {{ game_name }} Satta King Chart?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "{{ game_name }} Satta King Chart is a complete monthly record showing all daily results for {{ game_name }} game. It helps players track patterns, analyze trends, and view historical data."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How to read {{ game_name }} Chart for {{ month_name }} {{ selected_year }}?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The chart displays date, day name, and result for each day of {{ month_name }} {{ selected_year }}. Results marked in green indicate declared numbers. You can switch months and years using the filters above."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What are hot numbers in {{ game_name }} chart?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Hot numbers are digits that appear most frequently in recent results. For {{ game_name }} in {{ month_name }} {{ selected_year }}, the hot ending digits are {{ hot_digits|join(', ') }}."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Where can I see {{ game_name }} previous month chart?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Use the month and year dropdown filters on this page to view {{ game_name }} chart for any previous month. Historical records are available for multiple years."
+            }
+        }
+    ]
+}
+</script>
+
 <style>
     .chart-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .breadcrumb { color: #9ca3af; font-size: 0.85rem; margin-bottom: 20px; }
+    .breadcrumb a { color: #ffd700; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
     .chart-header { text-align: center; margin-bottom: 30px; }
     .chart-header h1 { color: #ffd700; font-size: 1.8rem; margin-bottom: 15px; }
+    .chart-header p { color: #9ca3af; }
     .filter-section { background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 20px; margin-bottom: 30px; }
     .filter-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; }
     .filter-row select { background: #111827; color: #fff; border: 1px solid #374151; padding: 10px 15px; border-radius: 8px; font-size: 1rem; }
     .filter-row button { background: linear-gradient(135deg, #e94560 0%, #c91f4d 100%); color: #fff; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; }
     .games-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 15px; }
-    .games-list a { background: #1e3a5f; color: #fff; padding: 6px 12px; border-radius: 15px; text-decoration: none; font-size: 0.85rem; }
+    .games-list a { background: #1e3a5f; color: #fff; padding: 6px 12px; border-radius: 15px; text-decoration: none; font-size: 0.85rem; transition: all 0.3s; }
+    .games-list a:hover { background: #2d4a6f; }
     .games-list a.active { background: #e94560; }
     .chart-table-container { overflow-x: auto; }
     .monthly-chart { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -23,15 +105,40 @@
     .monthly-chart td { background: #111827; }
     .monthly-chart .has-result { color: #10b981; font-weight: 700; font-size: 1.1rem; }
     .stats-section { background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 25px; margin-top: 30px; }
+    .stats-section h2 { color: #ffd700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+    .stats-section h3 { color: #10b981; font-size: 1.1rem; margin: 20px 0 10px; }
+    .stats-section p { color: #d1d5db; line-height: 1.7; margin-bottom: 15px; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
     .stat-box { background: #111827; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #374151; }
     .stat-value { font-size: 1.5rem; font-weight: 700; color: #ffd700; }
     .stat-label { color: #9ca3af; font-size: 0.8rem; margin-top: 5px; }
+    .hot-digits { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+    .hot-digit { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 15px 20px; border-radius: 10px; font-size: 1.3rem; font-weight: 700; }
+    .info-section { background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 25px; margin-top: 30px; }
+    .info-section h2 { color: #ffd700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+    .info-section p { color: #d1d5db; line-height: 1.8; margin-bottom: 15px; }
+    .info-section ul { margin: 15px 0; padding-left: 25px; color: #d1d5db; }
+    .info-section li { margin-bottom: 8px; line-height: 1.6; }
+    .faq-section { background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 25px; margin-top: 30px; }
+    .faq-section h2 { color: #ffd700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+    .faq-item { border-bottom: 1px solid #374151; padding: 15px 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-question { color: #ffd700; font-weight: 600; margin-bottom: 8px; }
+    .faq-answer { color: #d1d5db; line-height: 1.7; }
+    @media (max-width: 768px) {
+        .chart-header h1 { font-size: 1.4rem; }
+        .monthly-chart th, .monthly-chart td { padding: 8px 5px; font-size: 0.85rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="chart-container">
+    <nav class="breadcrumb">
+        <a href="/">Home</a> &raquo; <a href="/chart">Chart</a> &raquo; {{ game_name }}
+    </nav>
+
     <div class="chart-header">
         <h1>{{ game_name }} Satta King Chart {{ month_name }} {{ selected_year }}</h1>
         <p>Complete monthly record for {{ game_name }} - {{ total_games }}+ games available</p>
@@ -61,12 +168,13 @@
         
         <div class="games-list">
             {% for g in all_games[:20] %}
-            <a href="/chart?game={{ g|urlencode }}&month={{ selected_month }}&year={{ selected_year }}" {% if g == game_name %}class="active"{% endif %}>{{ g }}</a>
+            <a href="/chart?game={{ g|urlencode }}" class="{% if g == game_name %}active{% endif %}">{{ g }}</a>
             {% endfor %}
         </div>
     </div>
 
     <div class="chart-table-container">
+        <h2 style="color: #ffd700; margin-bottom: 15px;">{{ game_name }} Record {{ month_name }} {{ selected_year }}</h2>
         <table class="monthly-chart">
             <thead>
                 <tr>
@@ -81,7 +189,7 @@
                 <tr>
                     <td>{{ '%02d'|format(day) }}/{{ '%02d'|format(selected_month) }}/{{ selected_year }}</td>
                     <td>{{ day_names.get(date_str, '--') }}</td>
-                    <td class="{% if result_map.get(date_str) and result_map.get(date_str) != '--' %}has-result{% endif %}">
+                    <td class="{% if result_map.get(date_str) and result_map.get(date_str) not in ['--', 'XX', 'Waiting'] %}has-result{% endif %}">
                         {{ result_map.get(date_str, '--') or '--' }}
                     </td>
                 </tr>
@@ -91,7 +199,9 @@
     </div>
 
     <div class="stats-section">
-        <h3 style="color: #ffd700; margin-bottom: 20px;">{{ game_name }} Statistics - {{ month_name }} {{ selected_year }}</h3>
+        <h2>{{ game_name }} Statistics - {{ month_name }} {{ selected_year }}</h2>
+        <p>Statistical analysis of {{ game_name }} Satta King results for {{ month_name }} {{ selected_year }}:</p>
+        
         <div class="stats-grid">
             <div class="stat-box">
                 <div class="stat-value">{{ odd_count }}</div>
@@ -102,19 +212,89 @@
                 <div class="stat-label">Even Numbers</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value">{{ hot_digits|join(', ') }}</div>
-                <div class="stat-label">Hot Digits</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">{{ results|length }}</div>
+                <div class="stat-value">{{ odd_count + even_count }}</div>
                 <div class="stat-label">Total Results</div>
             </div>
+            <div class="stat-box">
+                <div class="stat-value">{{ total_games }}</div>
+                <div class="stat-label">Games Available</div>
+            </div>
+        </div>
+
+        <h3>Hot Ending Digits for {{ game_name }}</h3>
+        <p>These ending digits have appeared most frequently in {{ game_name }} results during {{ month_name }} {{ selected_year }}:</p>
+        <div class="hot-digits">
+            {% for d in hot_digits %}
+            <span class="hot-digit">{{ d }}</span>
+            {% endfor %}
+        </div>
+        <p>Numbers ending with {{ hot_digits|join(', ') }} have shown higher frequency. {% if odd_count > even_count %}Odd numbers have appeared more often this month.{% elif even_count > odd_count %}Even numbers have been more frequent this month.{% else %}Odd and even numbers have appeared equally.{% endif %}</p>
+    </div>
+
+    <div class="info-section">
+        <h2>About {{ game_name }} Satta King Chart</h2>
+        
+        <p>The <strong>{{ game_name }} Satta King Chart</strong> for {{ month_name }} {{ selected_year }} provides a comprehensive record of all daily results. This chart is essential for players who want to track patterns, analyze trends, and make informed decisions based on historical data.</p>
+
+        <h3>How to Use {{ game_name }} Chart</h3>
+        <ul>
+            <li><strong>Daily Tracking:</strong> Check this chart daily to see the latest {{ game_name }} result added to the record</li>
+            <li><strong>Pattern Analysis:</strong> Look for recurring patterns in results - odd/even distribution, hot digits, consecutive numbers</li>
+            <li><strong>Historical Comparison:</strong> Use the month/year filters to compare results across different time periods</li>
+            <li><strong>Statistics Reference:</strong> Use the statistics section to understand frequency distributions</li>
+        </ul>
+
+        <h3>{{ game_name }} Chart Features</h3>
+        <p>Our {{ game_name }} Satta King chart offers:</p>
+        <ul>
+            <li>Complete daily records with date, day name, and result</li>
+            <li>Real-time updates as soon as results are announced</li>
+            <li>Historical data spanning multiple months and years</li>
+            <li>Statistical analysis including odd/even counts and hot digits</li>
+            <li>Mobile-friendly responsive design for easy viewing</li>
+            <li>Quick access to {{ total_games }}+ other game charts</li>
+        </ul>
+
+        <h3>Understanding {{ game_name }} Patterns</h3>
+        <p>In {{ month_name }} {{ selected_year }}, {{ game_name }} has shown {{ odd_count }} odd results and {{ even_count }} even results. The most frequent ending digits are {{ hot_digits|join(', ') }}. These statistics can help you understand the distribution pattern, though past results don't guarantee future outcomes.</p>
+    </div>
+
+    <div class="faq-section">
+        <h2>{{ game_name }} Chart FAQ</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">What is {{ game_name }} Satta King Chart?</div>
+            <div class="faq-answer">{{ game_name }} Satta King Chart is a complete monthly record showing all daily results for the {{ game_name }} game. It displays date, day, and result in a tabular format, making it easy to track and analyze patterns over time.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">How to read {{ game_name }} Chart for {{ month_name }} {{ selected_year }}?</div>
+            <div class="faq-answer">The chart displays three columns - Date, Day, and Result. Results marked in green are declared numbers. Entries showing '--' indicate results that are pending or unavailable. You can use the dropdown filters to switch between different months and years.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">What are hot numbers in {{ game_name }} chart?</div>
+            <div class="faq-answer">Hot numbers are ending digits that appear most frequently in recent results. For {{ game_name }} in {{ month_name }} {{ selected_year }}, the hot ending digits are {{ hot_digits|join(', ') }}. These are calculated based on actual result data from this month.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">Where can I see {{ game_name }} previous month chart?</div>
+            <div class="faq-answer">Use the month and year dropdown filters at the top of this page to view {{ game_name }} chart for any previous month. We maintain historical records for multiple years, allowing you to analyze long-term patterns.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">Is {{ game_name }} chart updated daily?</div>
+            <div class="faq-answer">Yes, our {{ game_name }} Satta King chart is updated in real-time. As soon as results are announced, they are added to the chart automatically. You can refresh this page to see the latest updates.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">How many games charts are available?</div>
+            <div class="faq-answer">We provide charts for {{ total_games }}+ Satta King games. You can use the game dropdown filter or click on game names in the quick access list to switch between different game charts instantly.</div>
         </div>
     </div>
 
-    <div class="post-section" style="background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 25px; margin-top: 30px;">
-        <h2 style="color: #ffd700;">About {{ game_name }} Satta King Chart</h2>
-        <p style="color: #d1d5db; line-height: 1.8;">This page shows the complete {{ game_name }} Satta King chart for {{ month_name }} {{ selected_year }}. You can view historical results, analyze patterns, and check statistics. Use the filters above to select different games, months, and years.</p>
+    <div class="disclaimer" style="background: #7f1d1d; padding: 20px; border-radius: 10px; margin-top: 30px;">
+        <p style="margin: 0; color: #fecaca;"><strong>Disclaimer:</strong> This website is for informational and educational purposes only. We do not promote, encourage, or support any form of gambling or betting activities. Gambling may be illegal in your jurisdiction. Please verify and comply with your local laws and regulations. The information provided is for entertainment and reference only.</p>
     </div>
 </div>
 {% endblock %}
