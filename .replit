@@ -1,4 +1,4 @@
-modules = ["php-8.3", "php-8.4", "postgresql-16"]
+modules = ["php-8.3", "php-8.4", "postgresql-16", "python-3.11"]
 [agent]
 expertMode = true
 
@@ -12,19 +12,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Satta King Website"
+args = "Satta King Python"
 
 [[workflows.workflow]]
-name = "Satta King Website"
+name = "Satta King Python"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "php -S 0.0.0.0:5000 router.php"
+args = "python app.py"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Satta King | Satta King 786 | Delhi Satta King Live Results Today{% endblock %}</title>
+    <meta name="description" content="{% block description %}Satta King Fast Live Results - Check Satta King Disawar, Gali, Delhi Bazar, Shri Ganesh Satta King results.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}satta king, satta king 786, delhi satta king, satta king disawar{% endblock %}">
+    <meta name="robots" content="index, follow">
+    {% if google_verify %}<meta name="google-site-verification" content="{{ google_verify }}">{% endif %}
+    {% if bing_verify %}<meta name="msvalidate.01" content="{{ bing_verify }}">{% endif %}
+    <meta property="og:title" content="{% block og_title %}Satta King | Satta King 786{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Get fastest Satta King results{% endblock %}">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="{% block canonical %}/{% endblock %}">
+    <link rel="stylesheet" href="/css/style.css">
+    {% if analytics_code %}{{ analytics_code|safe }}{% endif %}
+    {% if adsense_auto_ads %}{{ adsense_auto_ads|safe }}{% endif %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Satta <span>King</span></h1>
+                </div>
+                <button class="mobile-menu" onclick="toggleMenu()">&#9776;</button>
+                <nav id="mainNav">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/daily-updates">Daily Update</a></li>
+                        <li><a href="/news">News</a></li>
+                        <li><a href="/chart">Chart</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="/page/about">About</a>
+                <a href="/page/contact">Contact</a>
+                <a href="/page/disclaimer">Disclaimer</a>
+                <a href="/page/privacy-policy">Privacy Policy</a>
+                <a href="/page/terms-conditions">Terms & Conditions</a>
+            </div>
+            <p>&copy; 2026 Satta King. All Rights Reserved.</p>
+            <p>Satta King Fast Results | Delhi Satta King | Satta King 786 | Satta King Chart</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('mainNav').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

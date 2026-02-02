@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h2>Satta King Fast Live Results</h2>
+    <p>Satta King 786 | Delhi Satta King | Satta King Disawar | Gali Disawar</p>
+    <div class="current-date">{{ current_date }}</div>
+    <div class="last-update">Last Updated: {{ last_update_formatted }}</div>
+</section>
+
+<section class="seo-intro">
+    <p>Welcome to <strong>Satta King</strong> - your trusted source for <strong>Satta King Fast</strong> live results. Get instant updates for <strong>Delhi Satta King</strong>, <strong>Satta King Disawar</strong>, <strong>Shri Ganesh Satta King</strong>, and <strong>Delhi Bazar Satta King</strong> results. Check our <strong>Satta King Chart</strong> for <strong>Satta King Gali Disawar</strong> historical records.</p>
+</section>
+
+{{ header_ad|safe }}
+
+<section class="results-section" id="results">
+    <h3 class="section-title">Satta King Results - Delhi Satta King Today</h3>
+    <p class="subtitle">{{ yesterday[-5:] }} & {{ today }}</p>
+    
+    <div class="results-table-container">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Game Name</th>
+                    <th>{{ yesterday[-5:] }}</th>
+                    <th>{{ today[-5:] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in game_results %}
+                <tr>
+                    <td class="game-name-cell">
+                        {{ game.name }}
+                        <div class="game-meta">
+                            <a href="/chart?game={{ game.name|urlencode }}" class="record-chart-link">Record Chart</a>
+                            <span class="game-time-inline">{{ game.time }}</span>
+                        </div>
+                    </td>
+                    <td class="result-cell {% if game.yesterday not in ['--', 'XX'] %}has-result{% endif %}">
+                        {{ '--' if game.yesterday in ['XX', '--'] else game.yesterday }}
+                    </td>
+                    <td class="result-cell {% if game.today not in ['--', 'XX'] %}has-result today-result{% else %}waiting{% endif %}">
+                        {{ 'Waiting' if game.today == 'XX' else game.today }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="refresh-btn" onclick="location.reload()">Refresh Satta King Results</button>
+    </div>
+    
+    {{ after_result_ad|safe }}
+</section>
+
+<section class="chart-section" id="chart">
+    <h3 class="section-title">Satta King Chart - Gali, Desawar, Faridabad, Ghaziabad Weekly</h3>
+    <div class="results-table-container">
+        <table class="chart-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Gali</th>
+                    <th>Desawar</th>
+                    <th>Faridabad</th>
+                    <th>Ghaziabad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for date, games in chart_by_date.items() %}
+                <tr>
+                    <td>{{ date }}</td>
+                    <td>{{ games.get('Gali', '-') }}</td>
+                    <td>{{ games.get('Desawar', '-') }}</td>
+                    <td>{{ games.get('Faridabad', '-') }}</td>
+                    <td>{{ games.get('Ghaziabad', '-') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="faq-section" id="faq">
+    <h3 class="section-title">Satta King FAQ</h3>
+    <div class="faq-container">
+        <div class="faq-item">
+            <h4 class="faq-question">What is Satta King?</h4>
+            <p class="faq-answer">Satta King is a popular game where players can check daily results. Our website provides fast Satta King results including Delhi Satta King, Satta King Disawar, Gali, Faridabad, and Ghaziabad results.</p>
+        </div>
+        <div class="faq-item">
+            <h4 class="faq-question">How to check Satta King Chart?</h4>
+            <p class="faq-answer">You can check Satta King Chart on our website. Click on "Record Chart" link next to any game name to view the monthly Satta King chart with historical results.</p>
+        </div>
+        <div class="faq-item">
+            <h4 class="faq-question">What is Delhi Bazar Satta King?</h4>
+            <p class="faq-answer">Delhi Bazar Satta King is one of the popular games. We provide live results for Delhi Bazar, Shri Ganesh Satta King, Black Satta King, and Satta King 786 updated daily.</p>
+        </div>
+        <div class="faq-item">
+            <h4 class="faq-question">When are Satta King results updated?</h4>
+            <p class="faq-answer">Satta King Fast results are updated throughout the day as games conclude. Each game has a specific time slot - check the time shown next to each game name for exact result timing.</p>
+        </div>
+    </div>
+</section>
+
+<div class="disclaimer">
+    <p><strong>Disclaimer:</strong> This website is for informational purposes only. We do not promote or encourage any form of gambling or betting. Please check your local laws before participating in any games.</p>
+</div>
+
+{{ footer_ad|safe }}
+{% endblock %}

@@ -1,49 +1,64 @@
 # Satta King Website
 
 ## Overview
-A Satta King results website built with PHP that displays game results, charts, and news. The site includes an admin panel for managing results, games, and content.
+A Satta King results website built with Python Flask that displays game results, charts, and news. Features Cloudflare bypass for auto-scraping, 30-minute intervals, and admin panel. Supports both MySQL (production) and PostgreSQL (Replit).
 
 ## Project Structure
-- `index.php` - Main homepage showing live results
-- `admin.php` - Admin panel for managing the site
-- `chart.php` - Historical results chart
-- `daily-updates.php` - Daily update posts
-- `news.php` - News listing page
-- `news-post.php` - Individual news article page
-- `page.php` - Static pages (about, contact, etc.)
-- `post.php` - Individual result posts
-- `config/database.php` - PostgreSQL database connection
-- `config/init.php` - Database schema initialization
-- `lib/scraper.php` - Data scraping utilities
-- `lib/ads.php` - Ad placement utilities
-- `css/` - Stylesheets
-- `router.php` - PHP router for clean URLs
+- `app.py` - Main Flask application with all routes
+- `templates/` - Jinja2 HTML templates
+  - `base.html` - Base template with header/footer
+  - `index.html` - Homepage with live results
+  - `post.html` - Individual game result page
+  - `chart.html` - Historical results chart
+  - `admin.html` - Admin panel
+  - `news.html` / `news-post.html` - News pages
+  - `page.html` - Static pages
+  - `daily-updates.html` - Daily updates
+- `static/css/` - Stylesheets (same as PHP version)
+- `requirements.txt` - Python dependencies
+
+## Key Features
+- **Cloudflare Bypass**: Uses cloudscraper library for satta-king-fast.com
+- **Dual Database**: MySQL for production, PostgreSQL for Replit testing
+- **Auto-Scrape**: APScheduler runs scraping every 30 minutes
+- **SEO-Rich**: Same URL structure as PHP (/post/, /chart, /news/, /page/)
+- **91 Games**: Supports satta.ink (35 games) + satta-king-fast.com (56 games)
 
 ## Database
-Uses PostgreSQL with the following tables:
-- `games` - List of games and their time slots
+Supports both MySQL and PostgreSQL:
+- `games` - List of games and time slots
 - `satta_results` - Game results by date
 - `posts` - Daily update posts
 - `news_posts` - News articles
-- `site_pages` - Static pages (about, contact, etc.)
+- `site_pages` - Static pages
 - `site_settings` - Site configuration
-- `ad_placements` - Ad code placements
-- `scrape_logs` - Data scraping logs
+- `ad_placements` - Google AdSense placements
+- `scrape_sources` - Scraper source URLs
 
 ## Admin Panel
-Access the admin panel at `/admin.php`
-- Login with the password stored in `SESSION_SECRET` environment variable
-- Manage game results, games, posts, news, pages, and ads
+Access at `/admin`
+- Login with `SESSION_SECRET` environment variable
+- Manage results, games, posts, news, pages, ads
+- Manual and auto scraping controls
 
 ## Environment Variables
-- `DATABASE_URL` - PostgreSQL connection string (auto-configured)
+- `DATABASE_URL` - PostgreSQL (Replit) or omit for MySQL
+- `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` - MySQL (production)
 - `SESSION_SECRET` - Admin panel password
 
 ## Running the Project
-The site runs on PHP's built-in server:
 ```
-php -S 0.0.0.0:5000 router.php
+python app.py
+```
+
+## Production Deployment
+Use gunicorn:
+```
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 ## Recent Changes
-- 2026-01-31: Migrated from MySQL to PostgreSQL for Replit compatibility
+- 2026-02-02: Migrated from PHP to Python Flask
+- 2026-02-02: Added cloudscraper for Cloudflare bypass
+- 2026-02-02: Added dual database support (MySQL/PostgreSQL)
+- 2026-02-02: Implemented APScheduler for 30-min auto-scrape

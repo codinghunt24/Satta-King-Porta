@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Updates - Satta King Results{% endblock %}
+{% block description %}Daily Satta King updates and results for all games. Check latest posts and results.{% endblock %}
+{% block canonical %}/daily-updates{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h2>Daily Updates</h2>
+    <p>Latest Satta King Results and Posts</p>
+</section>
+
+<div class="posts-grid" style="display: grid; gap: 20px; margin-top: 30px;">
+    {% for post in posts %}
+    <div class="post-card" style="background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 20px; border: 1px solid #374151;">
+        <h3 style="color: #ffd700; margin-bottom: 10px;">
+            <a href="/post/{{ post.slug }}" style="color: #ffd700; text-decoration: none;">{{ post.title }}</a>
+        </h3>
+        <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">{{ post.meta_description[:150] }}...</p>
+        <div style="display: flex; justify-content: space-between; color: #6b7280; font-size: 0.85rem;">
+            <span>{{ post.post_date }}</span>
+            <span>{{ post.views }} views</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

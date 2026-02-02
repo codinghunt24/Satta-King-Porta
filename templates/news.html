@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}News - Satta King{% endblock %}
+{% block description %}Latest Satta King news and updates.{% endblock %}
+{% block canonical %}/news{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h2>Satta King News</h2>
+    <p>Latest News and Updates</p>
+</section>
+
+<div class="posts-grid" style="display: grid; gap: 20px; margin-top: 30px;">
+    {% for news in news_list %}
+    <div class="post-card" style="background: linear-gradient(145deg, #1f2937 0%, #111827 100%); border-radius: 15px; padding: 20px; border: 1px solid #374151;">
+        <h3 style="color: #ffd700; margin-bottom: 10px;">
+            <a href="/news/{{ news.slug }}" style="color: #ffd700; text-decoration: none;">{{ news.title }}</a>
+        </h3>
+        <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">{{ news.meta_description[:150] }}...</p>
+        <div style="display: flex; justify-content: space-between; color: #6b7280; font-size: 0.85rem;">
+            <span>{{ news.created_at }}</span>
+            <span>{{ news.views }} views</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
