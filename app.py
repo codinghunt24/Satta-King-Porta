@@ -1955,6 +1955,10 @@ def schedule_daily_posts():
     scheduler.add_job(func=run_daily_post_scheduler, trigger="interval", minutes=1, id='daily_posts')
     print("Daily post scheduler running (checks every minute)")
 
+@app.route('/download-posts-sql')
+def download_posts_sql():
+    return send_from_directory('.', 'posts_import.sql', as_attachment=True)
+
 schedule_auto_scrape()
 schedule_daily_posts()
 scheduler.start()
