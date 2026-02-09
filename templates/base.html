@@ -19,10 +19,6 @@
     <link rel="stylesheet" href="/css/style.css">
     {% if analytics_code %}{{ analytics_code|safe }}{% endif %}
     {% if adsense_auto_ads %}{{ adsense_auto_ads|safe }}{% endif %}
-    {% if popunder_ad %}{{ popunder_ad|safe }}{% endif %}
-    {% if social_bar_ad %}{{ social_bar_ad|safe }}{% endif %}
-    {% if in_page_push_ad %}{{ in_page_push_ad|safe }}{% endif %}
-    {% if interstitial_ad %}{{ interstitial_ad|safe }}{% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -67,6 +63,19 @@
         </div>
     </footer>
 
+    {% if popunder_ad %}
+    <div class="deferred-ad" data-ad="{{ popunder_ad|e }}" style="display:none;"></div>
+    {% endif %}
+    {% if social_bar_ad %}
+    <div class="deferred-ad" data-ad="{{ social_bar_ad|e }}" style="display:none;"></div>
+    {% endif %}
+    {% if in_page_push_ad %}
+    <div class="deferred-ad" data-ad="{{ in_page_push_ad|e }}" style="display:none;"></div>
+    {% endif %}
+    {% if interstitial_ad %}
+    <div class="deferred-ad" data-ad="{{ interstitial_ad|e }}" style="display:none;"></div>
+    {% endif %}
+
     {% if native_banner_ad %}
     <div class="ad-container native-banner-ad" style="margin: 15px auto; text-align: center;">{{ native_banner_ad|safe }}</div>
     {% endif %}
@@ -99,6 +108,37 @@
     <script>
         function toggleMenu() {
             document.getElementById('mainNav').classList.toggle('active');
+        }
+
+        function loadAdsDeferred() {
+            var adScripts = document.querySelectorAll('.deferred-ad');
+            adScripts.forEach(function(container) {
+                var scriptContent = container.getAttribute('data-ad');
+                if (scriptContent) {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = scriptContent;
+                    var scripts = temp.querySelectorAll('script');
+                    scripts.forEach(function(oldScript) {
+                        var newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                            newScript.async = true;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+                        document.head.appendChild(newScript);
+                    });
+                    container.removeAttribute('data-ad');
+                }
+            });
+        }
+
+        if (document.readyState === 'complete') {
+            setTimeout(loadAdsDeferred, 1500);
+        } else {
+            window.addEventListener('load', function() {
+                setTimeout(loadAdsDeferred, 1500);
+            });
         }
 
         let swRegistration = null;
