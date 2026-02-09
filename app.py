@@ -95,7 +95,13 @@ def inject_branding():
     return {
         'site_logo': get_setting('site_logo'),
         'site_favicon': get_setting('site_favicon'),
-        'site_icon': get_setting('site_icon')
+        'site_icon': get_setting('site_icon'),
+        'popunder_ad': display_ad('popunder'),
+        'social_bar_ad': display_ad('social_bar'),
+        'native_banner_ad': display_ad('native_banner'),
+        'in_page_push_ad': display_ad('in_page_push'),
+        'interstitial_ad': display_ad('interstitial'),
+        'mobile_sticky_banner_ad': display_ad('mobile_sticky_banner'),
     }
 
 def get_vapid_keys():
@@ -698,6 +704,8 @@ def index():
         below_title_ad=display_ad('below_title'),
         in_content_1_ad=display_ad('in_content_1'),
         in_content_2_ad=display_ad('in_content_2'),
+        after_results_table_ad=display_ad('after_results_table'),
+        after_chart_ad=display_ad('after_chart'),
         before_footer_ad=display_ad('before_footer'),
         push_prompt_title=get_setting('push_prompt_title'),
         push_prompt_message=get_setting('push_prompt_message'),
@@ -840,7 +848,13 @@ def post(slug):
             iso_date=iso_date,
             current_time_ist=current_time_ist,
             game_name=game_name,
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            post_top_ad=display_ad('post_top'),
+            post_middle_ad=display_ad('post_middle'),
+            post_bottom_ad=display_ad('post_bottom'),
+            post_sidebar_ad=display_ad('post_sidebar'),
+            header_ad=display_ad('header_banner'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"Post error: {e}")
@@ -935,7 +949,11 @@ def chart():
             even_count=even_count,
             hot_digits=hot_digits,
             total_games=len(all_games),
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            chart_top_ad=display_ad('chart_top'),
+            chart_bottom_ad=display_ad('chart_bottom'),
+            header_ad=display_ad('header_banner'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"Chart error: {e}")
@@ -956,7 +974,11 @@ def daily_updates():
         
         return render_template('daily_updates.html',
             posts=posts,
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            header_ad=display_ad('header_banner'),
+            in_content_1_ad=display_ad('in_content_1'),
+            in_content_2_ad=display_ad('in_content_2'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"Daily updates error: {e}")
@@ -998,7 +1020,11 @@ def news():
             current_page=page,
             total_pages=total_pages,
             total_news=total,
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            news_top_ad=display_ad('news_top'),
+            news_between_posts_ad=display_ad('news_between_posts'),
+            header_ad=display_ad('header_banner'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"News error: {e}")
@@ -1032,7 +1058,12 @@ def news_post(slug):
         return render_template('news_post.html',
             news=news_data,
             related_news=related_news,
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            post_top_ad=display_ad('post_top'),
+            post_middle_ad=display_ad('post_middle'),
+            post_bottom_ad=display_ad('post_bottom'),
+            header_ad=display_ad('header_banner'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"News post error: {e}")
@@ -1053,7 +1084,9 @@ def static_page(slug):
         
         return render_template('page.html',
             page=page_data,
-            adsense_auto_ads=get_setting('adsense_auto_ads')
+            adsense_auto_ads=get_setting('adsense_auto_ads'),
+            header_ad=display_ad('header_banner'),
+            before_footer_ad=display_ad('before_footer')
         )
     except Exception as e:
         print(f"Page error: {e}")

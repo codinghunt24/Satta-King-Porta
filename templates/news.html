@@ -140,10 +140,17 @@
         </div>
     </div>
 
+    {% if news_top_ad %}
+    <div class="ad-container" style="text-align: center; margin: 0 auto 20px;">{{ news_top_ad|safe }}</div>
+    {% endif %}
+
     <div class="news-layout">
         <main class="news-main">
             {% if news_list %}
                 {% for news in news_list %}
+                {% if loop.index == 4 and news_between_posts_ad %}
+                <div class="ad-container" style="text-align: center; margin: 10px auto;">{{ news_between_posts_ad|safe }}</div>
+                {% endif %}
                 <article class="news-card" itemscope itemtype="https://schema.org/NewsArticle">
                     {% if news.featured_image %}
                     <img src="{{ news.featured_image }}" alt="{{ news.title }}" class="news-card-image" itemprop="image">

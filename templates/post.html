@@ -175,6 +175,10 @@
         </p>
     </div>
 
+    {% if post_top_ad %}
+    <div class="ad-container" style="text-align: center; margin: 15px auto;">{{ post_top_ad|safe }}</div>
+    {% endif %}
+
     <div class="post-section">
         <h2>{{ game_name }} Result Today - {{ formatted_date }}</h2>
         
@@ -227,6 +231,10 @@
             <p>In the last 7 days, {{ game_name }} has shown {{ odd_count }} odd numbers and {{ even_count }} even numbers. The most frequent ending digits are {{ hot_digits|join(', ') }}. {% if odd_count > even_count %}There is a slight tendency towards odd numbers recently.{% elif even_count > odd_count %}Even numbers have appeared more frequently in recent results.{% else %}The distribution between odd and even numbers has been balanced.{% endif %}</p>
         </div>
     </div>
+
+    {% if post_middle_ad %}
+    <div class="ad-container" style="text-align: center; margin: 15px auto;">{{ post_middle_ad|safe }}</div>
+    {% endif %}
 
     <div class="post-section">
         <h2>{{ game_name }} Statistics & Analysis (30 Days)</h2>
@@ -381,6 +389,10 @@
             <div class="faq-answer">This page provides comprehensive statistics including odd/even distribution ({{ odd_count }} odd, {{ even_count }} even), high/low analysis ({{ high_count }} high, {{ low_count }} low), hot/cold digits, range distribution, and recent result records. Use our chart section for historical pattern analysis.</div>
         </div>
     </div>
+
+    {% if post_bottom_ad %}
+    <div class="ad-container" style="text-align: center; margin: 15px auto;">{{ post_bottom_ad|safe }}</div>
+    {% endif %}
 
     {% if related_posts %}
     <div class="post-section">

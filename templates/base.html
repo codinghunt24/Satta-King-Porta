@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="/css/style.css">
     {% if analytics_code %}{{ analytics_code|safe }}{% endif %}
     {% if adsense_auto_ads %}{{ adsense_auto_ads|safe }}{% endif %}
+    {% if popunder_ad %}{{ popunder_ad|safe }}{% endif %}
+    {% if social_bar_ad %}{{ social_bar_ad|safe }}{% endif %}
+    {% if in_page_push_ad %}{{ in_page_push_ad|safe }}{% endif %}
+    {% if interstitial_ad %}{{ interstitial_ad|safe }}{% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -62,6 +66,17 @@
             <p>Satta King Fast Results | Delhi Satta King | Satta King 786 | Satta King Chart</p>
         </div>
     </footer>
+
+    {% if native_banner_ad %}
+    <div class="ad-container native-banner-ad" style="margin: 15px auto; text-align: center;">{{ native_banner_ad|safe }}</div>
+    {% endif %}
+
+    {% if mobile_sticky_banner_ad %}
+    <div style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; text-align: center; background: rgba(0,0,0,0.9); padding: 5px 0;">
+        {{ mobile_sticky_banner_ad|safe }}
+        <button onclick="this.parentElement.style.display='none'" style="position: absolute; top: -10px; right: 10px; background: #e94560; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; line-height: 22px;">X</button>
+    </div>
+    {% endif %}
 
     <div id="push-prompt" style="display:none; position:fixed; top:15px; left:50%; transform:translateX(-50%) translateY(-150%); width:90%; max-width:400px; background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color:#fff; padding:14px 18px; z-index:10000; box-shadow:0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,0,0.2); border-radius:14px; transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">

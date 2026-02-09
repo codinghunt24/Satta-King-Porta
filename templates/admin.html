@@ -607,11 +607,12 @@
             </div>
             
             <div class="card">
-                <h3 class="card-title">📍 Manual Ad Placements</h3>
-                <p style="color: #9ca3af; margin-bottom: 15px;">Add custom ad units for specific positions. Professional placements for better user experience and earnings.</p>
+                <h3 class="card-title">📍 Adsterra Ad Placements</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Paste your Adsterra ad codes in the positions below. Supports Banner, Popunder, Social Bar, Native, In-Page Push, and more.</p>
                 
+                <h4 style="color: #e94560; margin: 20px 0 10px;">Homepage Ads</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
-                    {% for placement in ['header_banner', 'below_title', 'in_content_1', 'in_content_2', 'sidebar', 'before_footer', 'popup_modal'] %}
+                    {% for placement in ['header_banner', 'below_title', 'in_content_1', 'in_content_2', 'after_results_table', 'after_chart', 'before_footer'] %}
                     <div style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151;">
                         <form method="post" action="/admin/save-ad-placement">
                             <input type="hidden" name="placement_name" value="{{ placement }}">
@@ -622,7 +623,67 @@
                                     Active
                                 </label>
                             </div>
-                            <textarea name="ad_code" rows="3" placeholder="Paste ad unit code here..." style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px;">{% if ad_placements and ad_placements[placement] %}{{ ad_placements[placement].ad_code }}{% endif %}</textarea>
+                            <textarea name="ad_code" rows="3" placeholder="Paste Adsterra ad code here..." style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px;">{% if ad_placements and ad_placements[placement] %}{{ ad_placements[placement].ad_code }}{% endif %}</textarea>
+                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">Save</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h4 style="color: #e94560; margin: 20px 0 10px;">Post & Article Page Ads</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    {% for placement in ['post_top', 'post_middle', 'post_bottom', 'post_sidebar'] %}
+                    <div style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151;">
+                        <form method="post" action="/admin/save-ad-placement">
+                            <input type="hidden" name="placement_name" value="{{ placement }}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="color: #ffd700; text-transform: capitalize;">{{ placement.replace('_', ' ') }}</strong>
+                                <label style="display: flex; align-items: center; gap: 5px; color: #9ca3af; font-size: 0.85rem;">
+                                    <input type="checkbox" name="is_active" value="1" {% if ad_placements and ad_placements[placement] and ad_placements[placement].is_active %}checked{% endif %}>
+                                    Active
+                                </label>
+                            </div>
+                            <textarea name="ad_code" rows="3" placeholder="Paste Adsterra ad code here..." style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px;">{% if ad_placements and ad_placements[placement] %}{{ ad_placements[placement].ad_code }}{% endif %}</textarea>
+                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">Save</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h4 style="color: #e94560; margin: 20px 0 10px;">Chart & News Page Ads</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    {% for placement in ['chart_top', 'chart_bottom', 'news_top', 'news_between_posts'] %}
+                    <div style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151;">
+                        <form method="post" action="/admin/save-ad-placement">
+                            <input type="hidden" name="placement_name" value="{{ placement }}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="color: #ffd700; text-transform: capitalize;">{{ placement.replace('_', ' ') }}</strong>
+                                <label style="display: flex; align-items: center; gap: 5px; color: #9ca3af; font-size: 0.85rem;">
+                                    <input type="checkbox" name="is_active" value="1" {% if ad_placements and ad_placements[placement] and ad_placements[placement].is_active %}checked{% endif %}>
+                                    Active
+                                </label>
+                            </div>
+                            <textarea name="ad_code" rows="3" placeholder="Paste Adsterra ad code here..." style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px;">{% if ad_placements and ad_placements[placement] %}{{ ad_placements[placement].ad_code }}{% endif %}</textarea>
+                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">Save</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h4 style="color: #e94560; margin: 20px 0 10px;">Adsterra Special Formats (All Pages)</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    {% for placement in ['popunder', 'social_bar', 'native_banner', 'in_page_push', 'interstitial', 'mobile_sticky_banner'] %}
+                    <div style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151;">
+                        <form method="post" action="/admin/save-ad-placement">
+                            <input type="hidden" name="placement_name" value="{{ placement }}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="color: #ffd700; text-transform: capitalize;">{{ placement.replace('_', ' ') }}</strong>
+                                <label style="display: flex; align-items: center; gap: 5px; color: #9ca3af; font-size: 0.85rem;">
+                                    <input type="checkbox" name="is_active" value="1" {% if ad_placements and ad_placements[placement] and ad_placements[placement].is_active %}checked{% endif %}>
+                                    Active
+                                </label>
+                            </div>
+                            <textarea name="ad_code" rows="3" placeholder="Paste Adsterra ad code here..." style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px;">{% if ad_placements and ad_placements[placement] %}{{ ad_placements[placement].ad_code }}{% endif %}</textarea>
                             <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">Save</button>
                         </form>
                     </div>
@@ -630,15 +691,24 @@
                 </div>
                 
                 <div style="background: #1e3a5f; padding: 15px; border-radius: 8px;">
-                    <h4 style="color: #ffd700; margin-bottom: 10px;">💡 Ad Placement Guide</h4>
+                    <h4 style="color: #ffd700; margin-bottom: 10px;">Adsterra Ad Placement Guide</h4>
                     <ul style="color: #9ca3af; font-size: 0.9rem; line-height: 1.8;">
-                        <li><strong>Header Banner:</strong> 728x90 leaderboard at top of page</li>
+                        <li><strong>Header Banner:</strong> 728x90 leaderboard at top of every page</li>
                         <li><strong>Below Title:</strong> 336x280 rectangle below page title</li>
-                        <li><strong>In Content 1:</strong> Native/In-feed ad after first section</li>
-                        <li><strong>In Content 2:</strong> 300x250 medium rectangle mid-content</li>
-                        <li><strong>Sidebar:</strong> 300x600 skyscraper in sidebar</li>
+                        <li><strong>In Content 1 & 2:</strong> Native/Display ads within content area</li>
+                        <li><strong>After Results Table:</strong> Ad shown after the main results table</li>
+                        <li><strong>After Chart:</strong> Ad shown after the weekly chart section</li>
                         <li><strong>Before Footer:</strong> 728x90 leaderboard above footer</li>
-                        <li><strong>Popup Modal:</strong> Interstitial ad (use sparingly)</li>
+                        <li><strong>Post Top/Middle/Bottom:</strong> Ads on daily post and article pages</li>
+                        <li><strong>Post Sidebar:</strong> 300x250 sidebar ad on post pages</li>
+                        <li><strong>Chart Top/Bottom:</strong> Ads on chart pages</li>
+                        <li><strong>News Top / Between Posts:</strong> Ads on news listing page</li>
+                        <li style="color: #e94560;"><strong>Popunder:</strong> Opens ad in background tab on click (high CPM)</li>
+                        <li style="color: #e94560;"><strong>Social Bar:</strong> Floating notification-style ad (Adsterra exclusive)</li>
+                        <li style="color: #e94560;"><strong>Native Banner:</strong> Blends with content, recommended widget style</li>
+                        <li style="color: #e94560;"><strong>In-Page Push:</strong> Push notification style within page (no subscription needed)</li>
+                        <li style="color: #e94560;"><strong>Interstitial:</strong> Full-screen overlay ad (use sparingly)</li>
+                        <li style="color: #e94560;"><strong>Mobile Sticky Banner:</strong> Fixed banner at bottom on mobile devices</li>
                     </ul>
                 </div>
             </div>

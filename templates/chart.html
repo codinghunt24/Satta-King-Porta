@@ -173,6 +173,10 @@
         </div>
     </div>
 
+    {% if chart_top_ad %}
+    <div class="ad-container" style="text-align: center; margin: 15px auto;">{{ chart_top_ad|safe }}</div>
+    {% endif %}
+
     <div class="chart-table-container">
         <h2 style="color: #ffd700; margin-bottom: 15px;">{{ game_name }} Record {{ month_name }} {{ selected_year }}</h2>
         <table class="monthly-chart">
@@ -197,6 +201,10 @@
             </tbody>
         </table>
     </div>
+
+    {% if chart_bottom_ad %}
+    <div class="ad-container" style="text-align: center; margin: 15px auto;">{{ chart_bottom_ad|safe }}</div>
+    {% endif %}
 
     <div class="stats-section">
         <h2>{{ game_name }} Statistics - {{ month_name }} {{ selected_year }}</h2>

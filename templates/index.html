@@ -138,6 +138,14 @@
     {% endif %}
 </section>
 
+{% if after_results_table_ad %}
+<div class="ad-container" style="text-align: center; margin: 20px auto;">{{ after_results_table_ad|safe }}</div>
+{% endif %}
+
+{% if in_content_2_ad %}
+<div class="ad-container" style="text-align: center; margin: 20px auto;">{{ in_content_2_ad|safe }}</div>
+{% endif %}
+
 <section class="chart-section" id="chart">
     <h3 class="section-title">Satta King Chart - Gali, Desawar, Faridabad, Ghaziabad Weekly</h3>
     <div class="results-table-container">
@@ -165,6 +173,10 @@
         </table>
     </div>
 </section>
+
+{% if after_chart_ad %}
+<div class="ad-container" style="text-align: center; margin: 20px auto;">{{ after_chart_ad|safe }}</div>
+{% endif %}
 
 <section class="faq-section" id="faq">
     <h3 class="section-title">Satta King FAQ</h3>
