@@ -1,0 +1,30 @@
+---------------+----------------+----------+---------+---------+-----------------------------------
+ cricbuzz       | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/postgres                     +
+                |                |          |         |         | postgres=CTc/postgres            +
+                |                |          |         |         | cricuser=CTc/postgres
+ cricbuzz_prod  | priyacricbuz   | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/priyacricbuz                 +
+                |                |          |         |         | priyacricbuz=CTc/priyacricbuz
+ cricdb         | cricuser       | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/cricuser                     +
+                |                |          |         |         | cricuser=CTc/cricuser
+ ghaziabad_db   | ghaziabad_user | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/ghaziabad_user               +
+                |                |          |         |         | ghaziabad_user=CTc/ghaziabad_user
+ instapaisa     | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/postgres                     +
+                |                |          |         |         | postgres=CTc/postgres            +
+                |                |          |         |         | instauser=CTc/postgres
+ postgres       | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | 
+ priyanewportal | priyanewportal | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/priyanewportal               +
+                |                |          |         |         | priyanewportal=CTc/priyanewportal
+ sattadb        | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/postgres                     +
+                |                |          |         |         | postgres=CTc/postgres            +
+                |                |          |         |         | sattauser=CTc/postgres
+ sattaking      | sattauser      | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/sattauser                    +
+                |                |          |         |         | sattauser=CTc/sattauser
+ sattaking_db   | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/postgres                     +
+                |                |          |         |         | postgres=CTc/postgres            +
+                |                |          |         |         | sattaadmin=CTc/postgres
+ template0      | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =c/postgres                      +
+                |                |          |         |         | postgres=CTc/postgres
+ template1      | postgres       | UTF8     | C.UTF-8 | C.UTF-8 | =c/postgres                      +
+                |                |          |         |         | postgres=CTc/postgres
+ viratdb        | viratuser      | UTF8     | C.UTF-8 | C.UTF-8 | =Tc/viratuser                    +
+             
