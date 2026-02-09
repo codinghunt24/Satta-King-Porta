@@ -1,0 +1,21 @@
+root@mail:/home/digitalcash24/sattaking.com.im# sudo pkill -HUP gunicorn
+root@mail:/home/digitalcash24/sattaking.com.im# grep -c "popunder\|social_bar\|native_banner" /home/digitalcash24/sattaking.com.im/app.py
+3
+root@mail:/home/digitalcash24/sattaking.com.im# ps aux | grep gunicorn
+root     1616118  0.1  1.1 317792 92340 ?        Sl   Feb08   2:55 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 1 --preload app:app --daemon
+root     2368393 11.4  0.7 167624 65032 ?        Sl   14:10   0:01 /home/digitalcash24/ghaziabad-satta.com/venv/bin/python3 /home/digitalcash24/ghaziabad-satta.com/venv/bin/gunicor --bind 0.0.0.0:8003 --workers 2 app:app
+root     2368394 10.7  0.7 167624 65024 ?        Sl   14:10   0:01 /home/digitalcash24/ghaziabad-satta.com/venv/bin/python3 /home/digitalcash24/ghaziabad-satta.com/venv/bin/gunicor --bind 0.0.0.0:8003 --workers 2 app:app
+root     2368395  1.5  0.9 319664 81204 ?        S    14:10   0:00 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 1 --preload app:app --daemon
+root     2368400  6.7  0.5 146696 44644 ?        Sl   14:10   0:00 /home/digitalcash24/jj-communication.com/venv/bin/python3 /home/digitalcash24/jj-communication.com/venv/bin/gunicorn -b 0.0.0.0:8002 main:app
+root     2368408 15.2  1.1 197608 92656 ?        Sl   14:10   0:02 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bingunicorn --workers 3 --bind 127.0.0.1:8000 --timeout 300 main:app
+root     2368409 14.5  1.1 197612 92660 ?        Sl   14:10   0:02 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bingunicorn --workers 3 --bind 127.0.0.1:8000 --timeout 300 main:app
+root     2368410 13.8  1.1 197612 92660 ?        Sl   14:10   0:01 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bingunicorn --workers 3 --bind 127.0.0.1:8000 --timeout 300 main:app
+root     2368525 30.5  0.6 161252 54996 ?        Ssl  14:10   0:00 /home/digitalcash24/sattaking.com.im/venv/bin/python3 /home/digitalcash24/sattaking.com.im/venv/bin/gunicorn --bind 0.0.0.0:8001 --workers 1 --preload app:app
+root     2368544  0.0  0.0   8160  2484 pts/0    S+   14:10   0:00 grep --color=auto gunicorn
+root     3166557  0.0  0.2  27588 19448 ?        S    Feb04   2:01 /home/digitalcash24/jj-communication.com/venv/bin/python3 /home/digitalcash24/jj-communication.com/venv/bin/gunicorn -b 0.0.0.0:8002 main:app
+root     3656043  0.0  0.2  27584 19452 ?        Ss   Feb05   1:55 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bingunicorn --workers 3 --bind 127.0.0.1:8000 --timeout 300 main:app
+root     3970386  0.0  0.2  27584 19456 ?        Ss   Feb05   1:47 /home/digitalcash24/ghaziabad-satta.com/venv/bin/python3 /home/digitalcash24/ghaziabad-satta.com/venv/bin/gunicor --bind 0.0.0.0:8003 --workers 2 app:app
+root@mail:/home/digitalcash24/sattaking.com.im# sudo pkill -HUP gunicorn
+root@mail:/home/digitalcash24/sattaking.com.im# sudo systemctl restart gunicorn
+Failed to restart gunicorn.service: Unit gunicorn.service not found.
+root@mail:/home/digitalcash24/sattaking.com.im# 
