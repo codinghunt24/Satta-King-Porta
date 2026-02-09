@@ -2,7 +2,7 @@ import os
 import re
 import json
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, send_from_directory, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -1639,26 +1639,35 @@ def admin_save_ad_placement():
     is_active = 1 if request.form.get('is_active') else 0
     
     if placement_name:
+        conn = None
         try:
             conn = get_db()
             cursor = get_cursor(conn)
-            if USE_MYSQL:
+            cursor.execute("SELECT id FROM ad_placements WHERE placement_name = %s", (placement_name,))
+            existing = cursor.fetchone()
+            if existing:
                 cursor.execute("""
-                    INSERT INTO ad_placements (placement_name, ad_code, is_active)
-                    VALUES (%s, %s, %s)
-                    ON DUPLICATE KEY UPDATE ad_code = VALUES(ad_code), is_active = VALUES(is_active)
-                """, (placement_name, ad_code, is_active))
+                    UPDATE ad_placements SET ad_code = %s, is_active = %s, updated_at = NOW()
+                    WHERE placement_name = %s
+                """, (ad_code, is_active, placement_name))
             else:
                 cursor.execute("""
                     INSERT INTO ad_placements (placement_name, ad_code, is_active, updated_at)
                     VALUES (%s, %s, %s, NOW())
-                    ON CONFLICT (placement_name) DO UPDATE SET ad_code = EXCLUDED.ad_code, is_active = EXCLUDED.is_active, updated_at = NOW()
                 """, (placement_name, ad_code, is_active))
             conn.commit()
             cursor.close()
             conn.close()
+            flash(f'Ad placement "{placement_name}" saved successfully!', 'success')
         except Exception as e:
             print(f"Error saving ad placement: {e}")
+            flash(f'Error saving ad placement: {str(e)}', 'error')
+            if conn:
+                try:
+                    conn.rollback()
+                    conn.close()
+                except:
+                    pass
     return redirect(url_for('admin_dashboard', page='ads'))
 
 @app.route('/admin/add-source', methods=['POST'])

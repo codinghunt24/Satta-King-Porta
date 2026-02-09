@@ -58,6 +58,15 @@
         </div>
         
         <div class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div style="padding: 12px 20px; margin-bottom: 15px; border-radius: 8px; {% if category == 'success' %}background: #065f46; border: 1px solid #10b981; color: #6ee7b7;{% else %}background: #7f1d1d; border: 1px solid #ef4444; color: #fca5a5;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
             {% if page == 'dashboard' %}
             <h1 style="margin-bottom: 30px;">Dashboard</h1>
             <div class="stats-grid">
