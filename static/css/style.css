@@ -1052,35 +1052,66 @@ nav a.active {
     text-align: center;
     margin: 15px auto;
     box-sizing: border-box;
+    width: 100%;
+}
+
+.ad-container * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .ad-container img,
-.ad-container iframe,
-.ad-container ins,
-.ad-container div {
+.ad-container iframe {
     max-width: 100% !important;
     height: auto !important;
-    box-sizing: border-box;
+    border: none;
 }
 
-.ad-container iframe {
-    border: none;
+.ad-container iframe[width] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.ad-container ins {
+    max-width: 100% !important;
+    display: block !important;
 }
 
 @media (max-width: 768px) {
     .ad-container {
-        padding: 0 5px;
-        overflow-x: hidden;
+        padding: 0;
+        overflow: hidden;
+        max-width: 100vw;
     }
-    
+
+    .ad-container *,
     .ad-container img,
     .ad-container iframe,
     .ad-container ins,
     .ad-container div,
-    .ad-container table {
+    .ad-container table,
+    .ad-container span,
+    .ad-container a {
         max-width: 100% !important;
+        width: auto !important;
+        overflow: hidden !important;
+    }
+    
+    .ad-container iframe {
         width: 100% !important;
         height: auto !important;
-        overflow: hidden;
+        min-height: 90px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-container iframe {
+        min-height: 60px;
+    }
+    
+    .header-ad,
+    .before-footer-ad {
+        transform: scale(0.9);
+        transform-origin: center;
     }
 }
