@@ -9,6 +9,7 @@ body {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     min-height: 100vh;
     color: #fff;
+    overflow-x: hidden;
 }
 
 .container {
@@ -1042,5 +1043,44 @@ nav a.active {
     .game-link-btn {
         padding: 10px 15px;
         font-size: 0.85rem;
+    }
+}
+
+.ad-container {
+    max-width: 100%;
+    overflow: hidden;
+    text-align: center;
+    margin: 15px auto;
+    box-sizing: border-box;
+}
+
+.ad-container img,
+.ad-container iframe,
+.ad-container ins,
+.ad-container div {
+    max-width: 100% !important;
+    height: auto !important;
+    box-sizing: border-box;
+}
+
+.ad-container iframe {
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .ad-container {
+        padding: 0 5px;
+        overflow-x: hidden;
+    }
+    
+    .ad-container img,
+    .ad-container iframe,
+    .ad-container ins,
+    .ad-container div,
+    .ad-container table {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: hidden;
     }
 }
