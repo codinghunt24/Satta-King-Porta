@@ -1650,9 +1650,9 @@ def admin_save_ad_placement():
                 """, (placement_name, ad_code, is_active))
             else:
                 cursor.execute("""
-                    INSERT INTO ad_placements (placement_name, ad_code, is_active)
-                    VALUES (%s, %s, %s)
-                    ON CONFLICT (placement_name) DO UPDATE SET ad_code = EXCLUDED.ad_code, is_active = EXCLUDED.is_active
+                    INSERT INTO ad_placements (placement_name, ad_code, is_active, updated_at)
+                    VALUES (%s, %s, %s, NOW())
+                    ON CONFLICT (placement_name) DO UPDATE SET ad_code = EXCLUDED.ad_code, is_active = EXCLUDED.is_active, updated_at = NOW()
                 """, (placement_name, ad_code, is_active))
             conn.commit()
             cursor.close()
