@@ -1651,6 +1651,7 @@ def admin_save_ad_placement():
                     WHERE placement_name = %s
                 """, (ad_code, is_active, placement_name))
             else:
+                cursor.execute("SELECT setval('ad_placements_id_seq', COALESCE((SELECT MAX(id) FROM ad_placements), 0) + 1, false)")
                 cursor.execute("""
                     INSERT INTO ad_placements (placement_name, ad_code, is_active, updated_at)
                     VALUES (%s, %s, %s, NOW())
