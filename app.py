@@ -804,6 +804,8 @@ def get_site_base_url():
         base_url = os.getenv('REPLIT_DEV_DOMAIN', '')
         if base_url:
             base_url = f'https://{base_url}'
+    if not base_url:
+        base_url = 'https://sattaking.com.im'
     return base_url.rstrip('/')
 
 def create_daily_post_for_game(game_name, result_date):
