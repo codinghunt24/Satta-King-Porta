@@ -32,3 +32,16 @@ pytz
 pywebpush
 requests
 werkzeug
+email_validator
+flask
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
+cryptography
+email_validator
+flask-sqlalchemy
+py-vapid
+pytz
+pywebpush
+requests
+werkzeug
