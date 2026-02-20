@@ -466,6 +466,219 @@ class SattaScraper:
         
         return updated
 
+GAME_CHART_MAPPING = {
+    'Delhi Golden': ('delhi-golden', 'dg'),
+    'Delhi Star': ('delhi-star', 'es'),
+    'Paras': ('paras', 'ps'),
+    'Farida Bazar': ('farida-bazar', 'fr'),
+    'Veera King': ('veera-king', 'vr'),
+    'Super Max': ('super-max', 'sx'),
+    'Shri Laxmi': ('shri-laxmi', 'sl'),
+    'Uttam Nagar': ('uttam-nagar', 'un'),
+    'Dubai Bazar': ('dubai-bazar', 'di'),
+    'Neelkanth': ('neelkanth', 'nl'),
+    'Old City': ('old-city', 'oc'),
+    'Delhi Day': ('delhi-day', 'dd'),
+    'Faridabad': ('faridabad', 'fb'),
+    'Rajdhani': ('rajdhani', 'ra'),
+    'Dhan Kuber': ('dhan-kuber', 'ku'),
+    'Today Bazaar': ('today-bazaar', 'tb'),
+    'New Sahibabad': ('new-sahibabad', 'ns'),
+    'Sawariya Seth': ('sawariya-seth', 'sw'),
+    'Shri Ji': ('shri-ji', 'sj'),
+    'Shiv Shankar': ('shiv-shankar', 'sk'),
+    'New Delhi': ('new-delhi', 'ne'),
+    'Gali 786': ('gali-786', 'gi'),
+    'Bharat': ('bharat', 'bt'),
+    'Gali Disawar Mix': ('gali-disawar-mix', 'gr'),
+    'White Gold': ('white-gold', 'wg'),
+    'Up Bazar': ('up-bazar', 'ub'),
+    'Pathankot': ('pathankot', 'pk'),
+    'Bombay Super': ('bombay-super', 'bo'),
+    'New Delhi Darbar': ('new-delhi-darbar', 'br'),
+    'Ghaziabad Night': ('ghaziabad-night', 'gz'),
+    'New Hyderabad': ('new-hyderabad', 'nh'),
+    'Rozana': ('rozana', 'rz'),
+    'Brij Rani': ('brij-rani', 'bi'),
+    'Shri Vishnu': ('shri-vishnu', 'vs'),
+    'Ghaziabad': ('ghaziabad', 'gb'),
+    'Mumbai Star': ('mumbai-star', 'mm'),
+    'New Ghaziabad': ('new-ghaziabad', 'ng'),
+    'Bala Ji Dadri': ('bala-ji-dadri', 'bd'),
+    'Jaisalmer': ('jaisalmer', 'jm'),
+    'Choti Gali': ('choti-gali', 'cg'),
+    'New Gali': ('new-gali', 'nw'),
+    'Delhi Evening': ('delhi-evening', 'de'),
+    'Gali': ('gali', 'gl'),
+    'Ram Bazar': ('ram-bazar', 'rb'),
+    'Bikaner Super': ('bikaner-super', 'bs'),
+    'Desawar': ('desawar', 'ds'),
+    'New Punjab': ('new-punjab', 'np'),
+    'Rahat King': ('rahat-king', 'rk'),
+    'Royal Bazar': ('royal-bazar', 'ro'),
+    'Surat City': ('surat-city', 'sc'),
+    'Guru Mangal': ('guru-mangal', 'gm'),
+    'Deep Sagar': ('deep-sagar', 'ee'),
+    'Super King': ('super-king', 'su'),
+    'Matka Sone Ka': ('matka-sone-ka', 'mo'),
+    'Up King': ('up-king', 'ui'),
+    'Rajdhani Jaipur': ('rajdhani-jaipur', 'rj'),
+    'Agra Bazar': ('agra-bazar', 'az'),
+    'Bihar King': ('bihar-king', 'bk'),
+    'Janta City': ('janta-city', 'jc'),
+    'Burj Khalifa': ('burj-khalifa', 'bj'),
+    'Shree Ganga Nagar': ('shree-ganga-nagar', 'eg'),
+    'Jaipur King': ('jaipur-king', 'jr'),
+    'Matka King': ('matka-king', 'mt'),
+    'Delhi Darbar': ('delhi-darbar', 'ed'),
+    'Super Taj': ('super-taj', 'st'),
+    'Kalka Bazar': ('kalka-bazar', 'kb'),
+    'Savera': ('savera', 'sv'),
+    'Super Delhi': ('super-delhi', 'sp'),
+    'Delhi City': ('delhi-city', 'dc'),
+    'Vikram Baazar': ('vikram-baazar', 'vk'),
+    'Delhi Dream': ('delhi-dream', 'dz'),
+    'Chennai': ('chennai', 'cn'),
+    'Mohali': ('mohali', 'mh'),
+    'Delhi Bazar': ('delhi-bazar', 'db'),
+    'Meerut City': ('meerut-city', 'mc'),
+    'Mangal Bazar': ('mangal-bazar', 'mr'),
+    'Royal Challenge': ('royal-challenge', 'rc'),
+    'Taj': ('taj', 'tj'),
+    'Maa Bhagwati': ('maa-bhagwati', 'mb'),
+    'Anarkali': ('anarkali', 'ak'),
+    'Dubai Delhi': ('dubai-delhi', 'da'),
+    'Chand Tara': ('chand-tara', 'ct'),
+    'Udaan King': ('udaan-king', 'ud'),
+    'Shiv Shakti': ('shiv-shakti', 'ss'),
+    'Shri Ganesh': ('shri-ganesh', 'sg'),
+    'Mewat': ('mewat', 'mw'),
+    'Ghaziabad Din': ('ghaziabad-din', 'gd'),
+    'Ahmedabad': ('ahmedabad', 'am'),
+    'Hindustan': ('hindustan', 'hi'),
+    'Maharaj': ('maharaj', 'mj'),
+    'Uttarakhand Uk': ('uttarakhand-uk', 'uk'),
+}
+
+def scrape_historical_chart(game_name, month, year):
+    if game_name not in GAME_CHART_MAPPING:
+        return {'success': False, 'message': f'Game "{game_name}" not found in mapping', 'records': 0}
+
+    slug, code = GAME_CHART_MAPPING[game_name]
+    url = f'https://satta-king-fast.com/{slug}/satta-result-chart/{code}/?month={month:02d}&year={year}'
+
+    try:
+        scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False})
+        response = scraper.get(url, timeout=30)
+        if response.status_code != 200:
+            return {'success': False, 'message': f'HTTP {response.status_code}', 'records': 0}
+
+        html = response.text
+        tables = re.findall(r'<table[^>]*>(.*?)</table>', html, re.DOTALL)
+
+        chart_table = None
+        for t in tables:
+            if 'Satta Result Chart' in t and 'DATE' in t:
+                chart_table = t
+                break
+
+        if not chart_table:
+            return {'success': False, 'message': 'Chart table not found on page', 'records': 0}
+
+        rows = re.findall(r'<tr[^>]*>(.*?)</tr>', chart_table, re.DOTALL)
+        if len(rows) < 3:
+            return {'success': False, 'message': 'Not enough rows in chart', 'records': 0}
+
+        header_row = rows[1]
+        header_cells = re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', header_row, re.DOTALL)
+        headers = [re.sub(r'<[^>]+>', '', c).strip() for c in header_cells]
+
+        game_col_index = None
+        abbrevs = {
+            'Desawar': 'DSWR', 'Faridabad': 'FRBD', 'Ghaziabad': 'GZBD',
+            'Gali': 'GALI', 'Shri Ganesh': 'SRGN',
+        }
+        search_terms = [game_name.upper(), game_name]
+        if game_name in abbrevs:
+            search_terms.append(abbrevs[game_name])
+        slug_name = slug.replace('-', ' ')
+        search_terms.append(slug_name.upper())
+
+        for idx, h in enumerate(headers):
+            if idx == 0:
+                continue
+            h_clean = h.strip()
+            h_upper = h_clean.upper()
+            for term in search_terms:
+                if term.upper() == h_upper or term.upper() in h_upper or h_upper in term.upper():
+                    game_col_index = idx
+                    break
+            if game_col_index is not None:
+                break
+
+        if game_col_index is None:
+            return {'success': False, 'message': f'Could not find column for "{game_name}" in chart headers: {headers}', 'records': 0}
+
+        records_saved = 0
+        conn = get_db()
+        cursor = get_cursor(conn)
+
+        if USE_MYSQL:
+            cursor.execute("""
+                INSERT IGNORE INTO games (name, time_slot, display_order) VALUES (%s, %s, %s)
+            """, (game_name, '12:00:00', 999))
+        else:
+            cursor.execute("""
+                INSERT INTO games (name, time_slot, display_order) VALUES (%s, %s, %s)
+                ON CONFLICT (name) DO NOTHING
+            """, (game_name, '12:00:00', 999))
+
+        import calendar
+        days_in_month = calendar.monthrange(year, month)[1]
+
+        for row in rows[2:]:
+            cells = re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', row, re.DOTALL)
+            cleaned = [re.sub(r'<[^>]+>', '', c).strip() for c in cells]
+
+            if not cleaned or not cleaned[0].isdigit():
+                continue
+
+            day = int(cleaned[0])
+            if day < 1 or day > days_in_month:
+                continue
+
+            if game_col_index >= len(cleaned):
+                continue
+
+            result = cleaned[game_col_index].strip()
+            if not re.match(r'^\d{2}$', result):
+                continue
+
+            result_date = f'{year}-{month:02d}-{day:02d}'
+
+            if USE_MYSQL:
+                cursor.execute("""
+                    INSERT IGNORE INTO satta_results (game_name, result, result_date, source_url, scraped_at)
+                    VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+                """, (game_name, result, result_date, url))
+            else:
+                cursor.execute("""
+                    INSERT INTO satta_results (game_name, result, result_date, source_url, scraped_at)
+                    VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    ON CONFLICT (game_name, result_date) DO NOTHING
+                """, (game_name, result, result_date, url))
+            records_saved += 1
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return {'success': True, 'message': f'Imported {records_saved} records for {game_name} ({month:02d}/{year})', 'records': records_saved}
+
+    except Exception as e:
+        print(f"Historical scrape error: {e}")
+        return {'success': False, 'message': str(e), 'records': 0}
+
 def run_auto_scrape():
     try:
         conn = get_db()
@@ -1963,6 +2176,112 @@ def admin_toggle_redirect(redirect_id):
         print(f"Toggle redirect error: {e}")
     
     return redirect(url_for('admin_redirects'))
+
+@app.route('/admin/historical-import')
+@login_required
+def admin_historical_import():
+    game_names = sorted(GAME_CHART_MAPPING.keys())
+    current_year = datetime.now(IST).year
+    years = list(range(current_year, 2014, -1))
+    months = [
+        (1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'),
+        (5, 'May'), (6, 'June'), (7, 'July'), (8, 'August'),
+        (9, 'September'), (10, 'October'), (11, 'November'), (12, 'December')
+    ]
+
+    conn = get_db()
+    cursor = get_cursor(conn)
+    cursor.execute("SELECT COUNT(*) as cnt FROM satta_results")
+    total_results = cursor.fetchone()['cnt']
+    cursor.execute("SELECT COUNT(DISTINCT game_name) as cnt FROM satta_results")
+    total_games = cursor.fetchone()['cnt']
+    cursor.execute("SELECT MIN(result_date) as min_date, MAX(result_date) as max_date FROM satta_results")
+    date_range = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    return render_template('admin_historical_import.html',
+        game_names=game_names,
+        years=years,
+        months=months,
+        total_results=total_results,
+        total_games=total_games,
+        date_range=date_range
+    )
+
+@app.route('/admin/historical-import/run', methods=['POST'])
+@login_required
+def admin_run_historical_import():
+    game_name = request.form.get('game_name', '')
+    try:
+        month = int(request.form.get('month', 1))
+        year = int(request.form.get('year', 2025))
+    except (ValueError, TypeError):
+        flash('Invalid month or year value', 'error')
+        return redirect(url_for('admin_historical_import'))
+
+    if not game_name or month < 1 or month > 12 or year < 2015 or year > datetime.now(IST).year:
+        flash('Please select a valid game, month and year', 'error')
+        return redirect(url_for('admin_historical_import'))
+
+    result = scrape_historical_chart(game_name, month, year)
+
+    if result['success']:
+        flash(result['message'], 'success')
+    else:
+        flash(f"Import failed: {result['message']}", 'error')
+
+    return redirect(url_for('admin_historical_import'))
+
+@app.route('/admin/historical-import/bulk', methods=['POST'])
+@login_required
+def admin_bulk_historical_import():
+    game_name = request.form.get('game_name', '')
+    try:
+        from_month = int(request.form.get('from_month', 1))
+        from_year = int(request.form.get('from_year', 2020))
+        to_month = int(request.form.get('to_month', 12))
+        to_year = int(request.form.get('to_year', 2025))
+    except (ValueError, TypeError):
+        flash('Invalid date values', 'error')
+        return redirect(url_for('admin_historical_import'))
+
+    current_year = datetime.now(IST).year
+    if not game_name or from_month < 1 or from_month > 12 or to_month < 1 or to_month > 12:
+        flash('Please select a valid game and date range', 'error')
+        return redirect(url_for('admin_historical_import'))
+    if from_year < 2015 or from_year > current_year or to_year < 2015 or to_year > current_year:
+        flash('Year must be between 2015 and current year', 'error')
+        return redirect(url_for('admin_historical_import'))
+    if (from_year > to_year) or (from_year == to_year and from_month > to_month):
+        flash('From date must be before To date', 'error')
+        return redirect(url_for('admin_historical_import'))
+
+    total_records = 0
+    total_months = 0
+    errors = []
+
+    y = from_year
+    m = from_month
+    while (y < to_year) or (y == to_year and m <= to_month):
+        result = scrape_historical_chart(game_name, m, y)
+        if result['success']:
+            total_records += result['records']
+            total_months += 1
+        else:
+            errors.append(f"{m:02d}/{y}: {result['message']}")
+
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+
+    if total_records > 0:
+        flash(f'Bulk import done! {total_records} records imported across {total_months} months for {game_name}', 'success')
+    if errors:
+        flash(f'Some months had errors: {"; ".join(errors[:5])}', 'error')
+
+    return redirect(url_for('admin_historical_import'))
 
 def check_scheduled_scrape():
     try:
