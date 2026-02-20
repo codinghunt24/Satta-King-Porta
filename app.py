@@ -944,6 +944,11 @@ def handle_redirects():
     path = request.path
     if path.startswith('/static') or path.startswith('/admin') or path.startswith('/api'):
         return None
+    if path == '/post.php' or path == '/post.php/':
+        slug = request.args.get('slug', '')
+        if slug:
+            return redirect(url_for('post', slug=slug), code=301)
+        return redirect(url_for('index'), code=301)
     redir = check_redirect(path)
     if redir:
         return redirect(redir['new_url'], code=redir['redirect_type'])
