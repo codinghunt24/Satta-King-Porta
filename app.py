@@ -962,18 +962,32 @@ def chart():
 @app.route('/daily-updates')
 def daily_updates():
     try:
+        page = request.args.get('page', 1, type=int)
+        per_page = 20
+        offset = (page - 1) * per_page
+
         conn = get_db()
         cursor = get_cursor(conn)
+
+        cursor.execute("SELECT COUNT(*) as total FROM posts")
+        total_row = cursor.fetchone()
+        total = total_row['total'] if total_row else 0
+        total_pages = (total + per_page - 1) // per_page if total > 0 else 1
+
         cursor.execute("""
             SELECT slug, title, meta_description, post_date, views, games_included 
-            FROM posts ORDER BY post_date DESC, created_at DESC LIMIT 50
-        """)
+            FROM posts ORDER BY post_date DESC, created_at DESC
+            LIMIT %s OFFSET %s
+        """, (per_page, offset))
         posts = cursor.fetchall()
         cursor.close()
         conn.close()
         
         return render_template('daily_updates.html',
             posts=posts,
+            current_page=page,
+            total_pages=total_pages,
+            total_posts=total,
             adsense_auto_ads=get_setting('adsense_auto_ads'),
             header_ad=display_ad('header_banner'),
             in_content_1_ad=display_ad('in_content_1'),

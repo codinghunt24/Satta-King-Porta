@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Daily Updates - Satta King Results{% endblock %}
+{% block title %}Daily Updates{% if current_page > 1 %} - Page {{ current_page }}{% endif %} - Satta King Results{% endblock %}
 {% block description %}Daily Satta King updates and results for all games. Check latest posts and results.{% endblock %}
-{% block canonical %}/daily-updates{% endblock %}
+{% block canonical %}/daily-updates{% if current_page > 1 %}?page={{ current_page }}{% endif %}{% endblock %}
 
 {% block content %}
 <section class="hero">
     <h2>Daily Updates</h2>
-    <p>Latest Satta King Results and Posts</p>
+    <p>Latest Satta King Results and Posts (Total: {{ total_posts }})</p>
 </section>
 
 {% if header_ad %}
@@ -34,6 +34,43 @@
     {% endif %}
     {% endfor %}
 </div>
+
+{% if total_pages > 1 %}
+<div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 40px auto; flex-wrap: wrap; padding: 0 10px;">
+    {% if current_page > 1 %}
+    <a href="/daily-updates?page={{ current_page - 1 }}" style="background: #1f2937; color: #ffd700; padding: 10px 16px; border-radius: 8px; text-decoration: none; border: 1px solid #374151; font-weight: bold;">&#8592; Prev</a>
+    {% endif %}
+
+    {% if current_page > 3 %}
+    <a href="/daily-updates?page=1" style="background: #1f2937; color: #e5e7eb; padding: 10px 14px; border-radius: 8px; text-decoration: none; border: 1px solid #374151;">1</a>
+    {% if current_page > 4 %}
+    <span style="color: #6b7280; padding: 10px 6px;">...</span>
+    {% endif %}
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+    {% if p >= current_page - 2 and p <= current_page + 2 %}
+    {% if p == current_page %}
+    <span style="background: linear-gradient(135deg, #ffd700, #f59e0b); color: #111827; padding: 10px 14px; border-radius: 8px; font-weight: bold; min-width: 40px; text-align: center;">{{ p }}</span>
+    {% else %}
+    <a href="/daily-updates?page={{ p }}" style="background: #1f2937; color: #e5e7eb; padding: 10px 14px; border-radius: 8px; text-decoration: none; border: 1px solid #374151; min-width: 40px; text-align: center;">{{ p }}</a>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+    {% if current_page < total_pages - 2 %}
+    {% if current_page < total_pages - 3 %}
+    <span style="color: #6b7280; padding: 10px 6px;">...</span>
+    {% endif %}
+    <a href="/daily-updates?page={{ total_pages }}" style="background: #1f2937; color: #e5e7eb; padding: 10px 14px; border-radius: 8px; text-decoration: none; border: 1px solid #374151;">{{ total_pages }}</a>
+    {% endif %}
+
+    {% if current_page < total_pages %}
+    <a href="/daily-updates?page={{ current_page + 1 }}" style="background: #1f2937; color: #ffd700; padding: 10px 16px; border-radius: 8px; text-decoration: none; border: 1px solid #374151; font-weight: bold;">Next &#8594;</a>
+    {% endif %}
+</div>
+<p style="text-align: center; color: #6b7280; font-size: 0.85rem; margin-bottom: 30px;">Page {{ current_page }} of {{ total_pages }}</p>
+{% endif %}
 
 {% if before_footer_ad %}
 <div class="ad-container" style="text-align: center; margin: 20px auto;">{{ before_footer_ad|safe }}</div>
