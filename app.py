@@ -1905,6 +1905,16 @@ def get_notification_logs():
     except:
         return []
 
+@app.route('/admin/save-setting', methods=['POST'])
+@login_required
+def admin_save_setting():
+    key = request.form.get('key', '')
+    value = request.form.get('value', '')
+    if key:
+        set_setting(key, value)
+        flash(f'Setting "{key}" saved successfully', 'success')
+    return redirect(request.referrer or url_for('admin_dashboard'))
+
 @app.route('/admin/save-push-settings', methods=['POST'])
 @login_required
 def admin_save_push_settings():
