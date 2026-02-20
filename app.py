@@ -620,6 +620,7 @@ def scrape_historical_chart(game_name, month, year):
             return {'success': False, 'message': f'Could not find column for "{game_name}" in chart headers: {headers}', 'records': 0}
 
         records_saved = 0
+        imported_dates = []
         conn = get_db()
         cursor = get_cursor(conn)
 
@@ -668,12 +669,18 @@ def scrape_historical_chart(game_name, month, year):
                     ON CONFLICT (game_name, result_date) DO NOTHING
                 """, (game_name, result, result_date, url))
             records_saved += 1
+            imported_dates.append(result_date)
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        return {'success': True, 'message': f'Imported {records_saved} records for {game_name} ({month:02d}/{year})', 'records': records_saved}
+        posts_created = 0
+        for d in imported_dates:
+            if create_daily_post_for_game(game_name, d):
+                posts_created += 1
+
+        return {'success': True, 'message': f'Imported {records_saved} records for {game_name} ({month:02d}/{year}), {posts_created} posts created', 'records': records_saved, 'posts_created': posts_created}
 
     except Exception as e:
         print(f"Historical scrape error: {e}")
@@ -722,6 +729,50 @@ def should_run_auto_scrape():
 def trigger_auto_scrape_if_needed():
     if should_run_auto_scrape():
         run_auto_scrape()
+
+def create_daily_post_for_game(game_name, result_date):
+    """Create a daily post for a specific game and date if it doesn't exist"""
+    try:
+        if isinstance(result_date, str):
+            result_date = datetime.strptime(result_date, '%Y-%m-%d').date()
+        formatted_date = result_date.strftime('%-d %b %Y')
+        date_str = result_date.strftime('%Y-%m-%d')
+
+        slug = f"{game_name.lower().replace(' ', '-').replace('/', '-')}-satta-king-result-{result_date.strftime('%-d').lower()}-{result_date.strftime('%B').lower()}-{result_date.strftime('%Y')}"
+        slug = re.sub(r'[^a-z0-9-]', '', slug)
+        slug = re.sub(r'-+', '-', slug)
+
+        title = f"{game_name} Satta King Result {formatted_date}"
+        meta_desc = f"Check {game_name} Satta King Result for {formatted_date}. Get live {game_name} result, chart, and fast updates."
+        meta_keywords = f"{game_name}, satta king, result, {formatted_date}, chart, live result"
+
+        conn = get_db()
+        cursor = get_cursor(conn)
+
+        cursor.execute("SELECT id FROM posts WHERE slug = %s", (slug,))
+        existing = cursor.fetchone()
+
+        created = False
+        if not existing:
+            if USE_MYSQL:
+                cursor.execute("""
+                    INSERT INTO posts (title, slug, post_date, meta_description, meta_keywords, games_included, views)
+                    VALUES (%s, %s, %s, %s, %s, %s, 0)
+                """, (title, slug, date_str, meta_desc, meta_keywords, game_name))
+            else:
+                cursor.execute("""
+                    INSERT INTO posts (title, slug, post_date, meta_description, meta_keywords, games_included, views)
+                    VALUES (%s, %s, %s, %s, %s, %s, 0)
+                """, (title, slug, date_str, meta_desc, meta_keywords, game_name))
+            created = True
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return created
+    except Exception as e:
+        print(f"Error creating daily post for {game_name} on {result_date}: {e}")
+        return False
 
 def create_daily_posts_for_all_games():
     """Create posts for ALL games with Waiting result at scheduled time"""
