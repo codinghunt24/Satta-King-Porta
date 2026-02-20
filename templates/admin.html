@@ -167,6 +167,7 @@
                     <ul>
                         <li class="{% if page == 'ads' %}active{% endif %}"><a href="/admin/dashboard?page=ads"><i class="fas fa-rectangle-ad"></i> Ads</a></li>
                         <li class="{% if page == 'sitemap' %}active{% endif %}"><a href="/admin/dashboard?page=sitemap"><i class="fas fa-sitemap"></i> Sitemap</a></li>
+                        <li class="{% if page == 'google-indexing' %}active{% endif %}"><a href="/admin/dashboard?page=google-indexing"><i class="fas fa-google"></i> Google Indexing</a></li>
                         <li class="{% if page == 'push' %}active{% endif %}"><a href="/admin/dashboard?page=push"><i class="fas fa-bell"></i> Push Notifications</a></li>
                         <li class="{% if page == 'branding' %}active{% endif %}"><a href="/admin/dashboard?page=branding"><i class="fas fa-palette"></i> Site Branding</a></li>
                         <li><a href="/admin/redirects"><i class="fas fa-share"></i> URL Redirects</a></li>
@@ -964,6 +965,109 @@
                 <p style="color: #9ca3af; margin-top: 10px;"><a href="/robots.txt" target="_blank" style="color: #60a5fa;">View robots.txt →</a></p>
             </div>
             
+            {% elif page == 'google-indexing' %}
+            <h1 style="margin-bottom: 30px;">Google Indexing API</h1>
+
+            <div class="card">
+                <h3 class="card-title">API Settings</h3>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <span style="color: #9ca3af;">Status:</span>
+                    {% if google_indexing_enabled == '1' %}
+                    <span style="color: #10b981; font-weight: bold;"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> Enabled</span>
+                    {% else %}
+                    <span style="color: #ef4444; font-weight: bold;"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> Disabled</span>
+                    {% endif %}
+                </div>
+
+                <form method="post" action="/admin/google-indexing/toggle" style="margin-bottom: 25px;">
+                    {% if google_indexing_enabled == '1' %}
+                    <button type="submit" class="btn btn-primary" style="background: #ef4444;">
+                        <i class="fas fa-power-off"></i> Disable API
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-power-off"></i> Enable API
+                    </button>
+                    {% endif %}
+                </form>
+
+                <div style="background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155; margin-bottom: 20px;">
+                    <h4 style="color: #ffd700; margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Setup Instructions</h4>
+                    <ol style="color: #9ca3af; line-height: 2.2; padding-left: 20px;">
+                        <li>Go to <a href="https://console.cloud.google.com/" target="_blank" style="color: #60a5fa;">Google Cloud Console</a></li>
+                        <li>Create a new project or select existing one</li>
+                        <li>Go to <strong style="color: #fff;">APIs & Services > Library</strong> and enable <strong style="color: #ffd700;">Web Search Indexing API</strong></li>
+                        <li>Go to <strong style="color: #fff;">IAM & Admin > Service Accounts</strong> and create a new service account</li>
+                        <li>Create a <strong style="color: #fff;">JSON key</strong> for the service account and download it</li>
+                        <li>Go to <a href="https://search.google.com/search-console" target="_blank" style="color: #60a5fa;">Google Search Console</a> > <strong style="color: #fff;">Settings > Users</strong></li>
+                        <li>Add the service account email as <strong style="color: #ffd700;">Owner</strong></li>
+                        <li>Paste the JSON key content below</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Service Account Credentials</h3>
+                <form method="post" action="/admin/google-indexing/save-credentials">
+                    <div class="form-group">
+                        <label>Service Account JSON Key (paste full JSON content)</label>
+                        <textarea name="credentials_json" rows="8" placeholder='{"type": "service_account", "project_id": "...", "private_key_id": "...", ...}'>{{ google_indexing_credentials_preview or '' }}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary">Save Credentials</button>
+                        <a href="/admin/google-indexing/test" class="btn btn-success" style="text-decoration: none; display: inline-flex; align-items: center;"><i class="fas fa-vial" style="margin-right: 6px;"></i> Test Connection</a>
+                    </div>
+                </form>
+                {% if google_indexing_email %}
+                <div style="margin-top: 15px; padding: 12px; background: #065f46; border: 1px solid #10b981; border-radius: 8px; color: #6ee7b7;">
+                    <i class="fas fa-check-circle"></i> Service Account: <strong>{{ google_indexing_email }}</strong>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Submit URL Manually</h3>
+                <form method="post" action="/admin/google-indexing/submit-url">
+                    <div class="form-group">
+                        <label>URL to Submit</label>
+                        <input type="url" name="url" placeholder="https://yourdomain.com/post/your-post-slug" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Action</label>
+                        <select name="action">
+                            <option value="URL_UPDATED">URL Updated (index/re-index)</option>
+                            <option value="URL_DELETED">URL Deleted (remove from index)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit to Google</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Bulk Submit All Posts</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">Submit all your post URLs to Google for indexing. Google allows up to 200 requests per day.</p>
+                <form method="post" action="/admin/google-indexing/submit-all-posts">
+                    <div class="form-group">
+                        <label>Number of recent posts to submit (max 200/day quota)</label>
+                        <input type="number" name="limit" value="100" min="1" max="200">
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-rocket"></i> Submit All Posts to Google</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Auto-Submit Settings</h3>
+                <p style="color: #9ca3af; margin-bottom: 15px;">When enabled, new posts created via Daily Update or Historical Import will be automatically submitted to Google for indexing.</p>
+                <div style="padding: 15px; background: #0f172a; border-radius: 10px; border: 1px solid #334155;">
+                    <p style="color: #10b981;"><i class="fas fa-check"></i> Auto-submit is active when API is <strong>Enabled</strong> and credentials are configured.</p>
+                    <p style="color: #9ca3af; margin-top: 10px;">Posts created via:</p>
+                    <ul style="color: #9ca3af; padding-left: 20px; margin-top: 5px; line-height: 2;">
+                        <li><strong style="color: #fff;">Daily Update</strong> - Auto-submitted when daily posts are generated</li>
+                        <li><strong style="color: #fff;">Historical Import</strong> - Auto-submitted for each imported result</li>
+                    </ul>
+                </div>
+            </div>
+
             {% elif page == 'push' %}
             <h1 style="margin-bottom: 30px;">Push Notifications</h1>
             

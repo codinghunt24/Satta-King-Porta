@@ -43,6 +43,8 @@ The application uses PostgreSQL with the following tables:
 4. **Result Charts**: Monthly/yearly result charts per game
 5. **SEO Optimized**: Meta tags, sitemaps, and structured data
 6. **Site Branding**: Upload custom logo, favicon, and site icon from Admin > Site Branding
+7. **Historical Import**: Import historical game data from satta-king-fast.com with auto post creation
+8. **Google Indexing API**: Auto-submit new posts to Google for fast indexing (Admin > Settings > Google Indexing)
 
 ## Running the Application
 The application runs on port 5000 using Gunicorn:
@@ -54,8 +56,14 @@ gunicorn --bind 0.0.0.0:5000 --reuse-port --reload app:app
 - `DATABASE_URL` - PostgreSQL connection string (auto-configured by Replit)
 - `SESSION_SECRET` - Flask session secret key
 
+## Key Libraries
+- `google-api-python-client` / `google-auth` - Google Indexing API integration
+
 ## Recent Changes
 - **Feb 2, 2026**: Migrated to Replit environment with PostgreSQL database
 - All tables created and production data imported (98 games, 8881 results, 192 posts)
 - Application configured to run on Replit with proper workflow settings
 - **Feb 3, 2026**: Added Site Branding feature in Admin panel for uploading logo, favicon, and site icon
+- **Feb 20, 2026**: Historical Import now auto-creates Daily Update posts for imported results
+- **Feb 20, 2026**: Added Google Indexing API integration (Admin > Google Indexing) with auto-submit, manual submit, and bulk submit
+- **Feb 20, 2026**: Modernized admin sidebar with icons, grouped sections, and removed unused "Results" nav

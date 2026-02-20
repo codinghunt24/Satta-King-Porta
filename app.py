@@ -730,6 +730,82 @@ def trigger_auto_scrape_if_needed():
     if should_run_auto_scrape():
         run_auto_scrape()
 
+def get_google_indexing_service():
+    """Get authenticated Google Indexing API service using stored credentials"""
+    try:
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+
+        creds_json = get_setting('google_indexing_credentials', '')
+        if not creds_json:
+            return None
+
+        creds_data = json.loads(creds_json)
+        credentials = service_account.Credentials.from_service_account_info(
+            creds_data,
+            scopes=['https://www.googleapis.com/auth/indexing']
+        )
+        service = build('indexing', 'v3', credentials=credentials)
+        return service
+    except Exception as e:
+        print(f"Google Indexing API auth error: {e}")
+        return None
+
+def submit_url_to_google(url, action='URL_UPDATED'):
+    """Submit a single URL to Google Indexing API"""
+    try:
+        enabled = get_setting('google_indexing_enabled', '0')
+        if enabled != '1':
+            return {'success': False, 'message': 'Google Indexing API is disabled'}
+
+        service = get_google_indexing_service()
+        if not service:
+            return {'success': False, 'message': 'Google Indexing API credentials not configured'}
+
+        body = {"url": url, "type": action}
+        response = service.urlNotifications().publish(body=body).execute()
+        print(f"Google Indexing API: Submitted {url} ({action})")
+        return {'success': True, 'message': f'URL submitted: {url}', 'response': str(response)}
+    except Exception as e:
+        print(f"Google Indexing API error for {url}: {e}")
+        return {'success': False, 'message': str(e)}
+
+def submit_urls_to_google_batch(urls, action='URL_UPDATED'):
+    """Submit multiple URLs to Google Indexing API"""
+    results = {'submitted': 0, 'failed': 0, 'errors': []}
+
+    enabled = get_setting('google_indexing_enabled', '0')
+    if enabled != '1':
+        return results
+
+    service = get_google_indexing_service()
+    if not service:
+        return results
+
+    for url in urls:
+        try:
+            body = {"url": url, "type": action}
+            service.urlNotifications().publish(body=body).execute()
+            results['submitted'] += 1
+            import time
+            time.sleep(0.3)
+        except Exception as e:
+            results['failed'] += 1
+            results['errors'].append(f"{url}: {str(e)}")
+            print(f"Google Indexing batch error for {url}: {e}")
+
+    print(f"Google Indexing batch: {results['submitted']} submitted, {results['failed']} failed")
+    return results
+
+def get_site_base_url():
+    """Get the site's base URL for generating full URLs"""
+    base_url = get_setting('site_url', '')
+    if not base_url:
+        base_url = os.getenv('REPLIT_DEV_DOMAIN', '')
+        if base_url:
+            base_url = f'https://{base_url}'
+    return base_url.rstrip('/')
+
 def create_daily_post_for_game(game_name, result_date):
     """Create a daily post for a specific game and date if it doesn't exist"""
     try:
@@ -769,6 +845,13 @@ def create_daily_post_for_game(game_name, result_date):
         conn.commit()
         cursor.close()
         conn.close()
+
+        if created:
+            base_url = get_site_base_url()
+            if base_url:
+                post_url = f"{base_url}/post/{slug}"
+                submit_url_to_google(post_url)
+
         return created
     except Exception as e:
         print(f"Error creating daily post for {game_name} on {result_date}: {e}")
@@ -1771,7 +1854,10 @@ def admin_dashboard():
             notification_logs=get_notification_logs(),
             site_logo=get_setting('site_logo'),
             site_favicon=get_setting('site_favicon'),
-            site_icon=get_setting('site_icon')
+            site_icon=get_setting('site_icon'),
+            google_indexing_enabled=get_setting('google_indexing_enabled', '0'),
+            google_indexing_email=get_setting('google_indexing_email', ''),
+            google_indexing_credentials_preview=''
         )
     except Exception as e:
         print(f"Admin error: {e}")
@@ -1892,6 +1978,106 @@ def admin_upload_branding():
             set_setting(field_name, url_path)
     
     return redirect(url_for('admin_dashboard', page='branding'))
+
+@app.route('/admin/google-indexing/toggle', methods=['POST'])
+@login_required
+def admin_google_indexing_toggle():
+    current = get_setting('google_indexing_enabled', '0')
+    new_val = '0' if current == '1' else '1'
+    set_setting('google_indexing_enabled', new_val)
+    flash(f'Google Indexing API {"enabled" if new_val == "1" else "disabled"}', 'success')
+    return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+@app.route('/admin/google-indexing/save-credentials', methods=['POST'])
+@login_required
+def admin_google_indexing_save_credentials():
+    creds_json = request.form.get('credentials_json', '').strip()
+    if not creds_json:
+        flash('Please paste the JSON key content', 'error')
+        return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+    try:
+        creds_data = json.loads(creds_json)
+        if 'client_email' not in creds_data or 'private_key' not in creds_data:
+            flash('Invalid service account JSON. Must contain client_email and private_key.', 'error')
+            return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+        set_setting('google_indexing_credentials', creds_json)
+        set_setting('google_indexing_email', creds_data.get('client_email', ''))
+        flash(f'Credentials saved for {creds_data["client_email"]}', 'success')
+    except json.JSONDecodeError:
+        flash('Invalid JSON format. Please paste the complete JSON key file content.', 'error')
+
+    return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+@app.route('/admin/google-indexing/test')
+@login_required
+def admin_google_indexing_test():
+    service = get_google_indexing_service()
+    if not service:
+        flash('Test failed: Credentials not configured or invalid', 'error')
+    else:
+        try:
+            base_url = get_site_base_url()
+            test_url = base_url if base_url else 'https://example.com'
+            service.urlNotifications().getMetadata(url=test_url).execute()
+            flash('Connection successful! Google Indexing API is ready to use.', 'success')
+        except Exception as e:
+            err_str = str(e)
+            if 'Permission denied' in err_str or '403' in err_str:
+                flash('Connection works but permission denied. Make sure the service account email is added as Owner in Google Search Console.', 'error')
+            elif 'not found' in err_str.lower() or '404' in err_str:
+                flash('Connection successful! API credentials are valid.', 'success')
+            else:
+                flash(f'Connection test: {err_str}', 'error')
+    return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+@app.route('/admin/google-indexing/submit-url', methods=['POST'])
+@login_required
+def admin_google_indexing_submit_url():
+    url = request.form.get('url', '').strip()
+    action = request.form.get('action', 'URL_UPDATED')
+
+    if not url:
+        flash('Please enter a URL', 'error')
+        return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+    result = submit_url_to_google(url, action)
+    if result['success']:
+        flash(f'URL submitted to Google: {url}', 'success')
+    else:
+        flash(f'Error: {result["message"]}', 'error')
+
+    return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+@app.route('/admin/google-indexing/submit-all-posts', methods=['POST'])
+@login_required
+def admin_google_indexing_submit_all_posts():
+    limit = int(request.form.get('limit', 100))
+    if limit > 200:
+        limit = 200
+
+    base_url = get_site_base_url()
+    if not base_url:
+        flash('Please set your Site URL in Sitemap settings first', 'error')
+        return redirect(url_for('admin_dashboard', page='google-indexing'))
+
+    try:
+        conn = get_db()
+        cursor = get_cursor(conn)
+        cursor.execute("SELECT slug FROM posts ORDER BY post_date DESC LIMIT %s", (limit,))
+        posts = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        urls = [f"{base_url}/post/{p['slug']}" for p in posts]
+        results = submit_urls_to_google_batch(urls)
+
+        flash(f'Submitted {results["submitted"]} URLs to Google ({results["failed"]} failed)', 'success' if results['failed'] == 0 else 'error')
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+
+    return redirect(url_for('admin_dashboard', page='google-indexing'))
 
 @app.route('/admin/save-auto-ads', methods=['POST'])
 @login_required
