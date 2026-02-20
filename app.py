@@ -2028,18 +2028,20 @@ def admin_google_indexing_test():
         flash('Test failed: Credentials not configured or invalid', 'error')
     else:
         try:
-            base_url = get_site_base_url()
-            test_url = base_url if base_url else 'https://example.com'
+            site_url = get_setting('site_url', '').rstrip('/')
+            if not site_url:
+                site_url = 'https://sattaking.com.im'
+            test_url = site_url + '/'
             service.urlNotifications().getMetadata(url=test_url).execute()
             flash('Connection successful! Google Indexing API is ready to use.', 'success')
         except Exception as e:
             err_str = str(e)
-            if 'Permission denied' in err_str or '403' in err_str:
-                flash('Connection works but permission denied. Make sure the service account email is added as Owner in Google Search Console.', 'error')
-            elif 'not found' in err_str.lower() or '404' in err_str:
-                flash('Connection successful! API credentials are valid.', 'success')
+            if '404' in err_str or 'not found' in err_str.lower():
+                flash('Connection successful! API credentials are valid and working.', 'success')
+            elif 'Permission denied' in err_str or '403' in err_str:
+                flash('Connection works but permission denied. Make sure the service account email is added as Owner in Google Search Console for ' + site_url, 'error')
             else:
-                flash(f'Connection test: {err_str}', 'error')
+                flash(f'Connection test error: {err_str}', 'error')
     return redirect(url_for('admin_dashboard', page='google-indexing'))
 
 @app.route('/admin/google-indexing/submit-url', methods=['POST'])
