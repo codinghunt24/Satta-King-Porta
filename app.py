@@ -949,6 +949,11 @@ def handle_redirects():
         if slug:
             return redirect(url_for('post', slug=slug), code=301)
         return redirect(url_for('index'), code=301)
+    if path == '/page.php' or path == '/page.php/':
+        slug = request.args.get('slug', '')
+        if slug:
+            return redirect('/page/' + slug, code=301)
+        return redirect(url_for('index'), code=301)
     redir = check_redirect(path)
     if redir:
         return redirect(redir['new_url'], code=redir['redirect_type'])
