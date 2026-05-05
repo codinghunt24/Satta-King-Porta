@@ -2,7 +2,8 @@
 
 {% block title %}Daily Updates{% if current_page > 1 %} - Page {{ current_page }}{% endif %} - Satta King Results{% endblock %}
 {% block description %}Daily Satta King updates and results for all games. Check latest posts and results.{% endblock %}
-{% block canonical %}/daily-updates{% if current_page > 1 %}?page={{ current_page }}{% endif %}{% endblock %}
+{% block canonical %}/daily-updates{% endblock %}
+{% block robots %}{% if current_page > 1 %}noindex, follow{% else %}index, follow{% endif %}{% endblock %}
 
 {% block content %}
 <section class="hero">
