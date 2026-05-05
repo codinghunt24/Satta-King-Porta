@@ -1565,13 +1565,33 @@ def sitemap_posts_month(year, month):
         xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         
+        today_date = datetime.now(IST).date()
         for post in posts:
             lastmod = post.get('updated_at') or post['post_date']
             if hasattr(lastmod, 'strftime'):
-                lastmod = lastmod.strftime('%Y-%m-%d')
+                lastmod_str = lastmod.strftime('%Y-%m-%d')
+                post_date_obj = lastmod.date() if hasattr(lastmod, 'date') else lastmod
             else:
-                lastmod = str(lastmod)[:10]
-            xml += f'<url><loc>{base_url}/post/{post["slug"]}</loc><lastmod>{lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>\n'
+                lastmod_str = str(lastmod)[:10]
+                try:
+                    from datetime import date as dt_date
+                    post_date_obj = dt_date.fromisoformat(str(post['post_date'])[:10])
+                except:
+                    post_date_obj = today_date
+            days_old = (today_date - post_date_obj).days if hasattr(post_date_obj, 'days') else 999
+            if days_old <= 3:
+                changefreq = 'daily'
+                priority = '0.9'
+            elif days_old <= 30:
+                changefreq = 'daily'
+                priority = '0.8'
+            elif days_old <= 90:
+                changefreq = 'weekly'
+                priority = '0.7'
+            else:
+                changefreq = 'monthly'
+                priority = '0.5'
+            xml += f'<url><loc>{base_url}/post/{post["slug"]}</loc><lastmod>{lastmod_str}</lastmod><changefreq>{changefreq}</changefreq><priority>{priority}</priority></url>\n'
         
         xml += '</urlset>'
         return Response(xml, mimetype='application/xml')

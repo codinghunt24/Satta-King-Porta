@@ -17,7 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ game_name }} Satta King Result {{ formatted_date }}">
 <meta name="twitter:description" content="Live {{ game_name }} result, chart, statistics for {{ formatted_date }}.">
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+{% block robots %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endblock %}
 <link rel="alternate" hreflang="en" href="/post/{{ post.slug }}">
 
 <script type="application/ld+json">
