@@ -7,7 +7,7 @@
 # =====================================================
 
 # ---- APNA SERVER IP YAHAN LIKHEN ----
-SERVER_IP="YOUR_SERVER_IP"
+SERVER_IP="185.202.238.243"
 SERVER_USER="root"
 INSTALL_DIR="/home/digitalcash24/sattaking.com.im"
 SERVICE_NAME="sattaking"
