@@ -1,17 +1,16 @@
 #!/bin/bash
 
 # =====================================================
-#   Satta King - Server Update Script
+#   Satta King - One Command Update Script
 #   Usage: bash update.sh
-#   Pehli baar: SERVER_IP set karein neeche
+#   Ye GitHub par push karega + server update karega
 # =====================================================
 
-# ---- APNA SERVER IP YAHAN LIKHEN ----
 SERVER_IP="185.202.238.243"
 SERVER_USER="root"
 INSTALL_DIR="/home/digitalcash24/sattaking.com.im"
 SERVICE_NAME="sattaking"
-# --------------------------------------
+GITHUB_REPO="https://github.com/codinghunt24/Satta-King-Porta"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -21,90 +20,70 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}   Satta King Server Update Script${NC}"
+echo -e "${BLUE}   Satta King - Full Update Script${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
-# Check karein ki SERVER_IP set hai
-if [ "$SERVER_IP" = "YOUR_SERVER_IP" ]; then
-    echo -e "${RED}[ERROR] SERVER_IP set nahi hai!${NC}"
-    echo -e "update.sh file kholein aur line 9 par apna server IP likhen."
-    exit 1
+# ── STEP 1: GitHub par push karo ────────────────────
+echo -e "${BLUE}[1/3] GitHub par latest changes push kar raha hai...${NC}"
+git add -A
+git diff --cached --quiet
+if [ $? -eq 0 ]; then
+    echo -e "${YELLOW}[SKIP] Koi naya change nahi hai push karne ke liye${NC}"
+else
+    git commit -m "Update: $(date '+%d %b %Y %H:%M')"
+    git push origin main
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}[ERROR] GitHub push nahi hua! Token/credentials check karein.${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}[OK] GitHub par push ho gaya!${NC}"
 fi
-
-echo -e "${YELLOW}[INFO] Server: ${SERVER_USER}@${SERVER_IP}${NC}"
-echo -e "${YELLOW}[INFO] Install Dir: ${INSTALL_DIR}${NC}"
 echo ""
 
-# Step 1: Server se connection check
-echo -e "${BLUE}[1/4] Server connection check kar raha hai...${NC}"
+# ── STEP 2: Server connection check ─────────────────
+echo -e "${BLUE}[2/3] Server se connect ho raha hai...${NC}"
 if ! ssh -o ConnectTimeout=10 -o BatchMode=yes ${SERVER_USER}@${SERVER_IP} "echo ok" &>/dev/null; then
     echo -e "${RED}[ERROR] Server se connect nahi ho pa raha!${NC}"
-    echo "SSH key setup hai? ya password required hai?"
+    echo ""
+    echo -e "Manual update ke liye server par ye chalao:"
+    echo -e "${YELLOW}  cd $INSTALL_DIR && git pull origin main && systemctl restart $SERVICE_NAME${NC}"
     exit 1
 fi
 echo -e "${GREEN}[OK] Server connected!${NC}"
 echo ""
 
-# Step 2: Files sync karein (rsync se - only changed files)
-echo -e "${BLUE}[2/4] Files sync kar raha hai (changed files only)...${NC}"
-rsync -avz --progress \
-    --exclude='.env' \
-    --exclude='__pycache__/' \
-    --exclude='*.pyc' \
-    --exclude='venv/' \
-    --exclude='.git/' \
-    --exclude='*.log' \
-    --exclude='attached_assets/' \
-    --exclude='static/uploads/' \
-    --exclude='.local/' \
-    --exclude='*.sh' \
-    ./ ${SERVER_USER}@${SERVER_IP}:${INSTALL_DIR}/
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}[ERROR] Files sync karne mein problem aayi!${NC}"
-    exit 1
-fi
-echo -e "${GREEN}[OK] Files sync ho gayi!${NC}"
-echo ""
-
-# Step 3: Server par packages update karein (agar requirements.txt badla ho)
-echo -e "${BLUE}[3/4] Python packages update kar raha hai...${NC}"
+# ── STEP 3: Server par git pull + restart ───────────
+echo -e "${BLUE}[3/3] Server update kar raha hai...${NC}"
 ssh ${SERVER_USER}@${SERVER_IP} "
+    set -e
     cd ${INSTALL_DIR}
-    source venv/bin/activate
-    pip install -r requirements.txt -q --upgrade
-    echo 'Packages updated!'
-"
-echo -e "${GREEN}[OK] Packages updated!${NC}"
-echo ""
-
-# Step 4: Service restart karein
-echo -e "${BLUE}[4/4] Service restart kar raha hai...${NC}"
-ssh ${SERVER_USER}@${SERVER_IP} "
+    echo 'Git pull kar raha hai...'
+    git pull origin main
+    echo 'Service restart kar raha hai...'
     systemctl restart ${SERVICE_NAME}
     sleep 2
     STATUS=\$(systemctl is-active ${SERVICE_NAME})
-    if [ \"\$STATUS\" = \"active\" ]; then
-        echo 'SERVICE_OK'
+    if [ \"\$STATUS\" = 'active' ]; then
+        echo 'SERVICE_RUNNING'
     else
-        echo 'SERVICE_FAIL'
+        echo 'SERVICE_FAILED'
         systemctl status ${SERVICE_NAME} --no-pager -l
     fi
 "
 
-if ssh ${SERVER_USER}@${SERVER_IP} "systemctl is-active ${SERVICE_NAME}" | grep -q "active"; then
-    echo -e "${GREEN}[OK] Service successfully restart ho gayi!${NC}"
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}[OK] Server update ho gaya aur service chal rahi hai!${NC}"
 else
-    echo -e "${RED}[ERROR] Service start nahi hui! Status check karein:${NC}"
-    echo "  ssh ${SERVER_USER}@${SERVER_IP} 'systemctl status ${SERVICE_NAME}'"
+    echo -e "${RED}[ERROR] Server par kuch problem aayi!${NC}"
     exit 1
 fi
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}   Update Complete! Site live hai.${NC}"
+echo -e "${GREEN}   Update Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "Site check karein: ${YELLOW}https://sattaking.com.im${NC}"
+echo -e "GitHub: ${YELLOW}${GITHUB_REPO}${NC}"
+echo -e "Site:   ${YELLOW}https://sattaking.com.im${NC}"
 echo ""
