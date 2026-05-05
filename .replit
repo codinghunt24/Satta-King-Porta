@@ -1,6 +1,7 @@
 modules = ["web", "python-3.11", "bash", "postgresql-16"]
 [agent]
 expertMode = true
+stack = "FLASK_VANILLA_JS"
 
 [workflows]
 runButton = "Project"
